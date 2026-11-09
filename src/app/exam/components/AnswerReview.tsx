@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import type { Question, ExamAnswer } from '../page';
 import { SECTION_INFO } from './ExamSetup';
 import AiExplain from './AiExplain';
+import { AI_ENABLED } from '@/lib/features';
 
 interface AnswerReviewProps {
   questions: Question[];
@@ -290,7 +291,7 @@ export default function AnswerReview({ questions, answers, onBack }: AnswerRevie
                     <p className="text-sm text-blue-800 leading-relaxed">{q.explanation}</p>
                   </div>
 
-                  {!isCorrect && (
+                  {!isCorrect && AI_ENABLED && (
                     <AiExplain question={q} selectedIndex={ans?.selectedIndex ?? null} />
                   )}
                 </div>

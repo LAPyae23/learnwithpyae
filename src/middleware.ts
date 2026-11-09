@@ -1,5 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
+import { AI_ENABLED } from '@/lib/features';
+
+const AI_PAGES = ['/sensei', '/interview'];
 
 const PROTECTED = [
   '/dashboard',
@@ -29,7 +32,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (pathname.startsWith('/admin') && session?.role !== 'admin') {
+  const isAiPage = AI_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  if ((pathname.startsWith('/admin') && session?.role !== 'admin') || (isAiPage && !AI_ENABLED)) {
     const url = req.nextUrl.clone();
     url.pathname = '/dashboard';
     url.search = '';

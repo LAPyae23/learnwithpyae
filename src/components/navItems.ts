@@ -1,3 +1,5 @@
+import { AI_ENABLED } from '@/lib/features';
+
 export interface NavItem {
   id: string;
   label: string;
@@ -10,7 +12,7 @@ export interface NavItem {
   adminOnly?: boolean;
 }
 
-export const navItems: NavItem[] = [
+const allNavItems: NavItem[] = [
   {
     id: 'nav-dashboard',
     label: 'ပင်မစာမျက်နှာ',
@@ -58,6 +60,7 @@ export const navItems: NavItem[] = [
     icon: 'PencilSquareIcon',
     href: '/kanji',
     section: 'practice',
+    mobile: !AI_ENABLED,
   },
   {
     id: 'nav-speak',
@@ -108,6 +111,9 @@ export const navItems: NavItem[] = [
   },
 ];
 
+// AI pages are hidden when no AI key is configured
+export const navItems = allNavItems.filter((i) => AI_ENABLED || i.section !== 'ai');
+
 export const sectionLabels: Record<NavItem['section'], string> = {
   main: 'လေ့လာရန်',
   practice: 'လေ့ကျင့်ရန်',
@@ -116,5 +122,5 @@ export const sectionLabels: Record<NavItem['section'], string> = {
 };
 
 export const pageTitles: Record<string, string> = Object.fromEntries(
-  navItems.map((i) => [i.href, i.label])
+  allNavItems.map((i) => [i.href, i.label])
 );
