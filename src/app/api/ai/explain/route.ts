@@ -4,7 +4,7 @@ import { activeProvider, AI_NOT_CONFIGURED, consumeAiQuota, streamAiText } from 
 import { EXPLAIN_SYSTEM } from '@/lib/prompts';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120; // free AI models can queue for a while
 
 const schema = z.object({
   level: z.enum(['N5', 'N4', 'N3', 'N2', 'N1']),

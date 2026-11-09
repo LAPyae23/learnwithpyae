@@ -4,7 +4,7 @@ import { activeProvider, AI_NOT_CONFIGURED, consumeAiQuota, streamAiText } from 
 import { INTERVIEW_SCENARIOS, INTERVIEW_SYSTEM } from '@/lib/prompts';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120; // free AI models can queue for a while
 
 const schema = z.object({
   scenarioId: z.string(),

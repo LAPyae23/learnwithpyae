@@ -27,8 +27,13 @@ interface CompatConfig {
 }
 
 /** Free models that handle Burmese well, best first. "openrouter/free" is the last resort. */
-const OPENROUTER_DEFAULT =
-  'google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free,openrouter/free';
+const OPENROUTER_DEFAULT = [
+  'google/gemma-4-31b-it:free',
+  'google/gemma-4-26b-a4b-it:free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-3.5-super-vl:free',
+  'openrouter/free',
+].join(',');
 
 const list = (v: string) =>
   v
@@ -74,7 +79,9 @@ async function post(cfg: CompatConfig, body: Record<string, unknown>) {
   let lastErr: CompatApiError | null = null;
   for (const model of cfg.models) {
     try {
-      return await postOnce(cfg, model, body);
+      const res = await postOnce(cfg, model, body);
+      console.info(`[ai] answered by ${model}`);
+      return res;
     } catch (e) {
       if (!(e instanceof CompatApiError) || !RETRY_NEXT.has(e.status)) throw e;
       console.warn(`[ai] ${model} failed (${e.status}), trying next model`);
@@ -96,7 +103,14 @@ async function postOnce(cfg: CompatConfig, model: string, body: Record<string, u
         'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://learnwithpyae.vercel.app',
         'X-Title': 'NihongoAcademy',
       },
-      body: JSON.stringify({ model, ...body }),
+      body: JSON.stringify({
+        model,
+        ...body,
+        // Keep "thinking" short on reasoning models so the answer fits and arrives quickly
+        ...(cfg.baseUrl.includes('openrouter.ai')
+          ? { reasoning: { effort: 'low', exclude: true } }
+          : {}),
+      }),
     });
   } catch (e) {
     throw new CompatApiError(0, `connection failed: ${(e as Error).message}`);
@@ -114,7 +128,8 @@ export async function* compatStream(
   messages: Msg[],
   maxTokens: number
 ): AsyncGenerator<string> {
-  const res = await post(cfg, { messages, max_tokens: maxTokens, stream: true });
+  // Extra room for models that spend tokens on hidden reasoning
+  const res = await post(cfg, { messages, max_tokens: Math.max(maxTokens, 4000), stream: true });
   if (!res.body) return;
   const reader = res.body.getReader();
   const decoder = new TextDecoder();

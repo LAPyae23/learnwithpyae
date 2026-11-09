@@ -6,7 +6,7 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120; // free AI models can queue for a while
 
 const schema = z.object({
   messages: z

@@ -15,7 +15,7 @@ import { touchStreak } from '@/lib/streak';
 import { InterviewScoreSchema } from '@/lib/interviewScore';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 120; // free AI models can queue for a while
 
 const requestSchema = z.object({
   scenarioId: z.string(),
