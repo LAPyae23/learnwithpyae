@@ -1,0 +1,120 @@
+export interface NavItem {
+  id: string;
+  label: string;
+  shortLabel?: string;
+  icon: string;
+  href: string;
+  badge?: number;
+  section: 'main' | 'practice' | 'ai' | 'account';
+  mobile?: boolean;
+  adminOnly?: boolean;
+}
+
+export const navItems: NavItem[] = [
+  {
+    id: 'nav-dashboard',
+    label: 'ပင်မစာမျက်နှာ',
+    shortLabel: 'ပင်မ',
+    icon: 'HomeIcon',
+    href: '/dashboard',
+    section: 'main',
+    mobile: true,
+  },
+  {
+    id: 'nav-plan',
+    label: 'လေ့လာရေး အစီအစဉ်',
+    icon: 'CalendarDaysIcon',
+    href: '/plan',
+    section: 'main',
+  },
+  {
+    id: 'nav-lessons',
+    label: 'သင်ခန်းစာများ',
+    icon: 'PlayCircleIcon',
+    href: '/lesson',
+    section: 'main',
+  },
+  {
+    id: 'nav-flashcards',
+    label: 'Flashcard',
+    shortLabel: 'Flashcard',
+    icon: 'RectangleStackIcon',
+    href: '/flashcards',
+    section: 'practice',
+    mobile: true,
+  },
+  {
+    id: 'nav-exam',
+    label: 'JLPT Mock Test',
+    shortLabel: 'Mock Test',
+    icon: 'DocumentTextIcon',
+    href: '/exam',
+    section: 'practice',
+    mobile: true,
+  },
+  {
+    id: 'nav-kanji',
+    label: 'Kanji လက်ရေး',
+    icon: 'PencilSquareIcon',
+    href: '/kanji',
+    section: 'practice',
+  },
+  {
+    id: 'nav-speak',
+    label: 'အသံထွက် လေ့ကျင့်',
+    icon: 'SpeakerWaveIcon',
+    href: '/speak',
+    section: 'practice',
+  },
+  {
+    id: 'nav-sensei',
+    label: 'AI ဆရာ',
+    shortLabel: 'AI ဆရာ',
+    icon: 'SparklesIcon',
+    href: '/sensei',
+    section: 'ai',
+    mobile: true,
+  },
+  {
+    id: 'nav-interview',
+    label: 'အင်တာဗျူး လေ့ကျင့်',
+    icon: 'BriefcaseIcon',
+    href: '/interview',
+    section: 'ai',
+  },
+  {
+    id: 'nav-billing',
+    label: 'Premium / ငွေပေးချေ',
+    icon: 'CreditCardIcon',
+    href: '/billing',
+    section: 'account',
+  },
+  {
+    id: 'nav-profile',
+    label: 'ကိုယ်ရေးအချက်အလက်',
+    shortLabel: 'ကျွန်ုပ်',
+    icon: 'UserCircleIcon',
+    href: '/profile',
+    section: 'account',
+    mobile: true,
+  },
+  {
+    id: 'nav-admin',
+    label: 'Admin',
+    icon: 'Cog8ToothIcon',
+    href: '/admin',
+    section: 'account',
+    adminOnly: true,
+  },
+];
+
+export const sectionLabels: Record<NavItem['section'], string> = {
+  main: 'လေ့လာရန်',
+  practice: 'လေ့ကျင့်ရန်',
+  ai: 'AI',
+  account: 'အကောင့်',
+};
+
+export const pageTitles: Record<string, string> = Object.fromEntries(
+  navItems.map((i) => [i.href, i.label])
+);

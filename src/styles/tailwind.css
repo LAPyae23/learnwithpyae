@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8faf9;
+  --foreground: #111827;
+  --primary: #006633;
+  --primary-foreground: #ffffff;
+  --secondary: #e8f5e9;
+  --secondary-foreground: #006633;
+  --accent: #004d26;
+  --accent-foreground: #ffffff;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #006633;
+  --radius: 10px;
+  --font-sans: var(--font-plus-jakarta-sans), var(--font-noto-myanmar), var(--font-noto-jp), sans-serif;
+  --font-jp: var(--font-noto-jp), 'Hiragino Sans', 'Yu Gothic', sans-serif;
+
+  /* Level Colors */
+  --level-n5: #3b82f6;
+  --level-n5-bg: #eff6ff;
+  --level-n4: #22c55e;
+  --level-n4-bg: #f0fdf4;
+  --level-n3: #f59e0b;
+  --level-n3-bg: #fffbeb;
+  --level-n2: #f97316;
+  --level-n2-bg: #fff7ed;
+  --level-n1: #dc2626;
+  --level-n1-bg: #fef2f2;
+
+  /* Semantic */
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --info: #2563eb;
+  --info-bg: #eff6ff;
+}
+
+@layer base {
+  :lang(ja),
+  .font-jp {
+    font-family: var(--font-jp);
+    line-height: 1.6;
+  }
+
+  * {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    /* Myanmar script has tall stacked vowels/medials; tighter leading clips them. */
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
+    margin: 0;
+  }
+}
+
+@layer utilities {
+  .font-mono-data {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-hero-xl {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.1;
+    font-weight: 700;
+  }
+
+  .text-hero-sub {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    line-height: 1.6;
+  }
+
+  .card-hover {
+    transition:
+      box-shadow 200ms ease,
+      transform 200ms ease;
+  }
+
+  .card-hover:hover {
+    box-shadow: 0 8px 30px rgba(0, 102, 51, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .level-badge-n5 {
+    background-color: var(--level-n5-bg);
+    color: var(--level-n5);
+    border: 1px solid #bfdbfe;
+  }
+
+  .level-badge-n4 {
+    background-color: var(--level-n4-bg);
+    color: var(--level-n4);
+    border: 1px solid #bbf7d0;
+  }
+
+  .level-badge-n3 {
+    background-color: var(--level-n3-bg);
+    color: var(--level-n3);
+    border: 1px solid #fde68a;
+  }
+
+  .level-badge-n2 {
+    background-color: var(--level-n2-bg);
+    color: var(--level-n2);
+    border: 1px solid #fed7aa;
+  }
+
+  .level-badge-n1 {
+    background-color: var(--level-n1-bg);
+    color: var(--level-n1);
+    border: 1px solid #fecaca;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+  }
+
+  .gradient-hero {
+    background: linear-gradient(160deg, #004d26 0%, #006633 40%, #008844 100%);
+  }
+
+  .flashcard-flip {
+    perspective: 1000px;
+  }
+
+  .flashcard-inner {
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+  }
+
+  .flashcard-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-face {
+    backface-visibility: hidden;
+  }
+
+  .flashcard-back {
+    transform: rotateY(180deg);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease forwards;
+  }
+
+  .animate-pulse-green {
+    animation: pulseGreen 1.5s ease infinite;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulseGreen {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(0, 102, 51, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(0, 102, 51, 0);
+    }
+  }
+
+  .streak-glow {
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35);
+  }
+
+  .progress-bar-fill {
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sticky-nav {
+    transition:
+      background-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .nav-scrolled {
+    background-color: var(--card);
+    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Kanji stroke-order demo: draws one stroke along its path */
+.kanji-draw {
+  stroke-dashoffset: 1;
+  animation: kanji-draw 0.6s ease forwards;
+}
+@keyframes kanji-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

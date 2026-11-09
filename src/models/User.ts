@@ -1,0 +1,37 @@
+import { Schema, model, models, type InferSchemaType, type Model } from 'mongoose';
+
+const userSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true, maxlength: 80 },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    passwordHash: { type: String, required: true, select: false },
+    role: { type: String, enum: ['student', 'admin'], default: 'student' },
+    targetLevel: { type: String, enum: ['N5', 'N4', 'N3', 'N2', 'N1', null], default: null },
+    examSession: { type: String, default: null }, // e.g. "2026-12"
+    studyMinutesPerDay: { type: Number, default: 30, min: 5, max: 600 },
+    plan: {
+      type: { type: String, enum: ['free', 'monthly', 'quarterly', 'annual'], default: 'free' },
+      expiresAt: { type: Date, default: null },
+    },
+    telegram: {
+      chatId: { type: String, default: null, index: true },
+      linkedAt: { type: Date, default: null },
+      remindersOn: { type: Boolean, default: true },
+      // One-time code used in the t.me deep link to connect the account
+      linkCode: { type: String, default: null, index: true },
+      linkCodeExpiresAt: { type: Date, default: null },
+    },
+    streak: {
+      current: { type: Number, default: 0 },
+      longest: { type: Number, default: 0 },
+      // Calendar day (YYYY-MM-DD, Asia/Yangon) of the last study activity
+      lastStudyDay: { type: String, default: null },
+    },
+  },
+  { timestamps: true }
+);
+
+export type UserDoc = InferSchemaType<typeof userSchema> & { _id: Schema.Types.ObjectId };
+
+export const User: Model<InferSchemaType<typeof userSchema>> =
+  models.User || model('User', userSchema);

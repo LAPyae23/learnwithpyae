@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="my">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline — NihongoAcademy</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Noto Sans Myanmar', 'Myanmar Text', system-ui, sans-serif;
+        background: #f8faf9;
+        color: #111827;
+        line-height: 1.7;
+        text-align: center;
+        padding: 24px;
+      }
+      .card {
+        max-width: 360px;
+      }
+      .big {
+        font-size: 56px;
+      }
+      a,
+      button {
+        display: inline-block;
+        margin-top: 16px;
+        background: #006633;
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-size: 15px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      p {
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="big">📶</div>
+      <h1>Internet မရှိပါ</h1>
+      <p>
+        Internet ပြန်ရရင် အလိုအလျောက် ဆက်သုံးလို့ရပါမယ်။ ကြိုဖွင့်ထားဖူးတဲ့ Flashcard နဲ့ Kanji page တွေကို
+        offline လည်း သုံးနိုင်ပါတယ်။
+      </p>
+      <a href="/flashcards">Flashcard ဖွင့်မယ်</a>
+      <br />
+      <button onclick="location.reload()">ပြန်စမ်းမယ်</button>
+    </div>
+  </body>
+</html>
