@@ -5,34 +5,32 @@ import AdminOverviewBento from './components/AdminOverviewBento';
 import UserManagementTable from './components/UserManagementTable';
 import Link from 'next/link';
 import RevenueAnalytics from './components/RevenueAnalytics';
-import SystemHealth from './components/SystemHealth';
 import PaymentApprovals from './components/PaymentApprovals';
 import TeacherApplications from './components/TeacherApplications';
 import SiteSettingsEditor from './components/SiteSettingsEditor';
+import { useAdminStats } from './components/adminStats';
 
-type AdminTab =
-  | 'payments'
-  | 'teachers'
-  | 'content'
-  | 'settings'
-  | 'overview'
-  | 'users'
-  | 'revenue'
-  | 'system';
+type AdminTab = 'overview' | 'payments' | 'teachers' | 'content' | 'users' | 'revenue' | 'settings';
 
 const tabs: { id: AdminTab; label: string; icon: string }[] = [
-  { id: 'payments', label: 'Payments', icon: '💳' },
+  { id: 'overview', label: 'အကျဉ်းချုပ်', icon: '📊' },
+  { id: 'payments', label: 'ငွေပေးချေမှု', icon: '💳' },
   { id: 'teachers', label: 'ဆရာများ', icon: '👩‍🏫' },
   { id: 'content', label: 'သင်ခန်းစာ', icon: '📚' },
-  { id: 'settings', label: 'Settings', icon: '🛠️' },
-  { id: 'overview', label: 'Overview', icon: '📊' },
   { id: 'users', label: 'Users', icon: '👥' },
-  { id: 'revenue', label: 'Revenue', icon: '💰' },
-  { id: 'system', label: 'System', icon: '⚙️' },
+  { id: 'revenue', label: 'ဝင်ငွေ', icon: '💰' },
+  { id: 'settings', label: 'Settings', icon: '🛠️' },
 ];
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<AdminTab>('payments');
+  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const { stats, error, reload } = useAdminStats();
+
+  const open = (tab: AdminTab) => {
+    // Numbers may have changed after approving payments, teachers, etc.
+    if (tab === 'overview' || tab === 'revenue') reload();
+    setActiveTab(tab);
+  };
 
   return (
     <AppLayout activePath="/admin">
@@ -44,14 +42,8 @@ export default function AdminDashboardPage() {
               Admin Dashboard
             </h1>
             <p className="text-[13px] text-muted-foreground mt-0.5">
-              Platform management & analytics
+              ငွေပေးချေမှု၊ ဆရာ၊ သင်ခန်းစာ၊ user တွေကို စီမံရန်
             </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 bg-success-bg border border-green-200 text-success text-[12px] font-semibold px-3 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-              All Systems Operational
-            </span>
           </div>
         </div>
 
@@ -60,7 +52,7 @@ export default function AdminDashboardPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => open(tab.id)}
               className={`flex items-center gap-1.5 px-4 py-2.5 whitespace-nowrap text-[13.5px] font-medium rounded-t-lg transition-all duration-150 border-b-2 -mb-px ${
                 activeTab === tab.id
                   ? 'border-primary text-primary bg-secondary/40'
@@ -69,6 +61,16 @@ export default function AdminDashboardPage() {
             >
               <span>{tab.icon}</span>
               {tab.label}
+              {tab.id === 'payments' && !!stats?.content.pendingPayments && (
+                <span className="ml-1 bg-warning text-white text-[10px] font-bold rounded-full px-1.5">
+                  {stats.content.pendingPayments}
+                </span>
+              )}
+              {tab.id === 'teachers' && !!stats?.content.pendingTeachers && (
+                <span className="ml-1 bg-warning text-white text-[10px] font-bold rounded-full px-1.5">
+                  {stats.content.pendingTeachers}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -76,8 +78,8 @@ export default function AdminDashboardPage() {
 
       {/* Tab Content */}
       {activeTab === 'payments' && <PaymentApprovals />}
-      {activeTab === 'overview' && <AdminOverviewBento />}
-      {activeTab === 'users' && <UserManagementTable />}
+      {activeTab === 'overview' && <AdminOverviewBento stats={stats} error={error} goTo={open} />}
+      {activeTab === 'users' && <UserManagementTable onChanged={reload} />}
       {activeTab === 'teachers' && <TeacherApplications />}
       {activeTab === 'settings' && <SiteSettingsEditor />}
       {activeTab === 'content' && (
@@ -103,8 +105,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
-      {activeTab === 'revenue' && <RevenueAnalytics />}
-      {activeTab === 'system' && <SystemHealth />}
+      {activeTab === 'revenue' && <RevenueAnalytics stats={stats} error={error} />}
     </AppLayout>
   );
 }
