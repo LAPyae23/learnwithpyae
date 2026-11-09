@@ -56,6 +56,14 @@ A web application designed for Japanese language processing and translation, bui
 | Social: reactions, 5-star ratings, comments, views, teacher profiles, follow + feed | `/lesson`, `/teachers` | — |
 | Teacher ↔ admin messages | `/messages` | Admin replies notify on Telegram |
 | Study groups: invite code / public, group streak, weekly leaderboard, chat, nudges | `/groups` | Nudges go to Telegram when connected |
+| Learn to earn: 30-day streak, 3 active invited friends, weekly group winner → free Premium | `/rewards` | Group prizes run in the daily cron on Mondays |
+| Buy one, gift one: each approved purchase funds the longest-waiting scholarship applicant | `/rewards`, Admin → ပညာသင်ဆု | — |
+| Teacher revenue share (views) + payouts | Studio, Admin → ဆရာ ဝင်ငွေ | % in Admin → Settings |
+| 1-on-1 classes: teacher times, booking + payment screenshot, meeting link, reviews | teacher profile, `/classes`, Studio, Admin → 1-on-1 | Commission % in Settings |
+| Jobs: learner job profiles, verified agencies with paid access, contact only after the learner accepts | `/jobs`, `/agency`, Admin → Agency | — |
+
+**Philosophy:** learning features are free for everyone. Premium is support (premium lessons chosen by
+teachers, more AI, a supporter badge) and funds teachers and scholarships.
 
 **AI (free):** set `OPENROUTER_API_KEY` (https://openrouter.ai/keys, no credit card; free Gemma 4 models with automatic fallback)
 or `GROQ_API_KEY` (https://console.groq.com/keys). Gemini (`GEMINI_API_KEY`) and Claude (`ANTHROPIC_API_KEY`)
