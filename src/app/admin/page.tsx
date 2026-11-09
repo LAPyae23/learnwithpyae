@@ -9,8 +9,17 @@ import PaymentApprovals from './components/PaymentApprovals';
 import TeacherApplications from './components/TeacherApplications';
 import SiteSettingsEditor from './components/SiteSettingsEditor';
 import { useAdminStats } from './components/adminStats';
+import ScholarshipQueue from './components/ScholarshipQueue';
 
-type AdminTab = 'overview' | 'payments' | 'teachers' | 'content' | 'users' | 'revenue' | 'settings';
+type AdminTab =
+  | 'overview'
+  | 'payments'
+  | 'teachers'
+  | 'content'
+  | 'users'
+  | 'revenue'
+  | 'scholarships'
+  | 'settings';
 
 const tabs: { id: AdminTab; label: string; icon: string }[] = [
   { id: 'overview', label: 'အကျဉ်းချုပ်', icon: '📊' },
@@ -19,6 +28,7 @@ const tabs: { id: AdminTab; label: string; icon: string }[] = [
   { id: 'content', label: 'သင်ခန်းစာ', icon: '📚' },
   { id: 'users', label: 'Users', icon: '👥' },
   { id: 'revenue', label: 'ဝင်ငွေ', icon: '💰' },
+  { id: 'scholarships', label: 'ပညာသင်ဆု', icon: '🎓' },
   { id: 'settings', label: 'Settings', icon: '🛠️' },
 ];
 
@@ -82,6 +92,7 @@ export default function AdminDashboardPage() {
       {activeTab === 'users' && <UserManagementTable onChanged={reload} />}
       {activeTab === 'teachers' && <TeacherApplications />}
       {activeTab === 'settings' && <SiteSettingsEditor />}
+      {activeTab === 'scholarships' && <ScholarshipQueue />}
       {activeTab === 'content' && (
         <div className="bg-card border border-border rounded-2xl p-6 max-w-xl">
           <p className="font-bold text-[15px] mb-1">📚 သင်ခန်းစာ စီမံရန်</p>

@@ -60,7 +60,7 @@ interface Msg {
   text: string;
   kind: 'text' | 'system';
   createdAt: string;
-  user: { id: string; name: string; isTeacher: boolean } | null;
+  user: { id: string; name: string; isTeacher: boolean; isSupporter?: boolean } | null;
   mine: boolean;
 }
 
@@ -149,6 +149,7 @@ function Chat({ groupId }: { groupId: string }) {
                 {!m.mine && (
                   <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                     {m.user?.name}
+                    {m.user?.isSupporter && <span title="Premium Supporter">⭐</span>}
                     {m.user?.isTeacher && (
                       <span className="text-[9.5px] px-1 rounded bg-primary text-white">ဆရာ</span>
                     )}

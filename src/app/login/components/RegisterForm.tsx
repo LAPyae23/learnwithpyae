@@ -55,6 +55,11 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           password: data.password,
           targetLevel: data.targetLevel,
           examDate: data.examDate,
+          // Invite links: /login?ref=CODE (remembered in case the page is reloaded)
+          ref:
+            new URLSearchParams(window.location.search).get('ref') ??
+            localStorage.getItem('na_ref') ??
+            undefined,
         },
       });
     } catch (err) {

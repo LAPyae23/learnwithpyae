@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { dailyReminderText, dueCount, sendTelegram, telegramConfigured } from '@/lib/telegram';
 import { User } from '@/models/User';
+import { awardWeeklyGroupWinners } from '@/lib/groups';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,9 +17,17 @@ export async function GET(req: Request) {
   if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
     return new NextResponse('unauthorized', { status: 401 });
   }
-  if (!telegramConfigured()) return NextResponse.json({ skipped: 'telegram not configured' });
-
   await connectDB();
+  // Local testing only: ?day=YYYY-MM-DD pretends it's that day
+  const testDay =
+    process.env.NODE_ENV !== 'production' ? new URL(req.url).searchParams.get('day') : null;
+  const prizes = await awardWeeklyGroupWinners(testDay ?? undefined).catch((e) => {
+    console.error('group prizes failed', e);
+    return { error: true };
+  });
+  if (!telegramConfigured())
+    return NextResponse.json({ prizes, skipped: 'telegram not configured' });
+
   const users = await User.find({ 'telegram.chatId': { $ne: null }, 'telegram.remindersOn': true })
     .select('name telegram.chatId streak.current')
     .lean();
@@ -40,5 +49,5 @@ export async function GET(req: Request) {
     // Telegram allows ~30 messages/second; stay well under it
     await new Promise((r) => setTimeout(r, 50));
   }
-  return NextResponse.json({ users: users.length, sent, failed });
+  return NextResponse.json({ prizes, users: users.length, sent, failed });
 }

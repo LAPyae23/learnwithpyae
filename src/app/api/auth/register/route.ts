@@ -20,17 +20,23 @@ const schema = z.object({
     .regex(/^\d{4}-\d{2}$/)
     .optional()
     .or(z.literal('')),
+  ref: z.string().trim().max(12).optional(),
 });
 
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonError('ထည့်ထားတဲ့ အချက်အလက် မှန်ကန်မှု မရှိပါ', 400);
-  const { name, email, password, targetLevel, examDate } = parsed.data;
+  const { name, email, password, targetLevel, examDate, ref } = parsed.data;
 
   await connectDB();
   if (await User.exists({ email })) {
     return jsonError('ဒီ email နဲ့ အကောင့် ရှိပြီးသားပါ', 409);
   }
+
+  // Invited by a friend? (the reward is given once this new learner actually studies)
+  const referrer = ref
+    ? await User.findOne({ referralCode: ref.toUpperCase() }).select('_id').lean()
+    : null;
 
   const user = await User.create({
     name,
@@ -38,6 +44,7 @@ export async function POST(req: Request) {
     passwordHash: await hashPassword(password),
     targetLevel: targetLevel || null,
     examSession: examDate || null,
+    referredBy: referrer?._id ?? null,
   });
 
   const res = NextResponse.json({ user: publicUser(user.toObject()) }, { status: 201 });

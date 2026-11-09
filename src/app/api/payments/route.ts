@@ -79,9 +79,13 @@ export async function GET() {
   const payments = await Payment.find({ user: session.sub })
     .sort({ createdAt: -1 })
     .limit(20)
-    .select('plan amount method status note createdAt planExpiresAt')
+    .select('plan amount method status note createdAt planExpiresAt giftedTo')
     .lean();
   return NextResponse.json({
-    payments: payments.map(({ _id, ...p }) => ({ id: String(_id), ...p })),
+    payments: payments.map(({ _id, giftedTo, ...p }) => ({
+      id: String(_id),
+      ...p,
+      gifted: !!giftedTo,
+    })),
   });
 }

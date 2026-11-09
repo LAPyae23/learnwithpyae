@@ -122,7 +122,13 @@ interface Comment {
   text: string;
   parent: string | null;
   createdAt: string;
-  user: { id: string; name: string; isTeacher: boolean; isAdmin: boolean } | null;
+  user: {
+    id: string;
+    name: string;
+    isTeacher: boolean;
+    isAdmin: boolean;
+    isSupporter?: boolean;
+  } | null;
   mine: boolean;
 }
 
@@ -205,6 +211,14 @@ export function CommentSection({ slug, onCount }: { slug: string; onCount: (n: n
             {c.user?.isTeacher && (
               <span className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-primary text-white">
                 ဆရာ
+              </span>
+            )}
+            {c.user?.isSupporter && (
+              <span
+                title="Premium Supporter"
+                className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800"
+              >
+                ⭐
               </span>
             )}
             {c.user?.isAdmin && !c.user.isTeacher && (

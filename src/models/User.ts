@@ -21,6 +21,9 @@ const userSchema = new Schema(
       linkCode: { type: String, default: null, index: true },
       linkCodeExpiresAt: { type: Date, default: null },
     },
+    // Invite friends: my code, and who invited me
+    referralCode: { type: String, default: undefined, unique: true, sparse: true },
+    referredBy: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     // Public teacher profile (shown on /teachers/[id])
     teacherProfile: {
       headline: { type: String, default: '', maxlength: 120 },

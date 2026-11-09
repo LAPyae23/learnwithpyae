@@ -15,7 +15,12 @@ interface Row {
   text: string;
   kind: string;
   createdAt: Date;
-  user: { _id: unknown; name: string; role?: string } | null;
+  user: {
+    _id: unknown;
+    name: string;
+    role?: string;
+    plan?: { type?: string; expiresAt?: Date | null };
+  } | null;
 }
 
 const view = (m: Row, me: string) => ({
@@ -24,7 +29,15 @@ const view = (m: Row, me: string) => ({
   kind: m.kind,
   createdAt: m.createdAt,
   user: m.user
-    ? { id: String(m.user._id), name: m.user.name, isTeacher: m.user.role === 'teacher' }
+    ? {
+        id: String(m.user._id),
+        name: m.user.name,
+        isTeacher: m.user.role === 'teacher',
+        isSupporter:
+          !!m.user.plan?.expiresAt &&
+          m.user.plan.type !== 'free' &&
+          new Date(m.user.plan.expiresAt) > new Date(),
+      }
     : null,
   mine: !!m.user && String(m.user._id) === me,
 });
@@ -42,7 +55,7 @@ export async function GET(req: Request, { params }: Ctx) {
   })
     .sort({ createdAt: -1 })
     .limit(60)
-    .populate('user', 'name role')
+    .populate('user', 'name role plan')
     .lean<Row[]>();
   return NextResponse.json({ messages: rows.reverse().map((m) => view(m, r.actor.id)) });
 }
@@ -69,6 +82,6 @@ export async function POST(req: Request, { params }: Ctx) {
     text: parsed.data.text,
   });
   await StudyGroup.updateOne({ _id: r.group._id }, { lastMessageAt: new Date() });
-  await m.populate('user', 'name role');
+  await m.populate('user', 'name role plan');
   return NextResponse.json({ message: view(m.toObject() as never, r.actor.id) }, { status: 201 });
 }

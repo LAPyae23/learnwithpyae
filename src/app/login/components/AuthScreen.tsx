@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import AppLogo from '@/components/ui/AppLogo';
 import Icon from '@/components/ui/AppIcon';
@@ -32,6 +32,15 @@ const levelInfo = [
 
 export default function AuthScreen() {
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
+
+  // Invite links (/login?ref=CODE) open the register tab and remember the code
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref) {
+      localStorage.setItem('na_ref', ref.slice(0, 12));
+      setActiveTab('register');
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex">

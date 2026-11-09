@@ -1,5 +1,6 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import AppLayout from '@/components/AppLayout';
 import Icon from '@/components/ui/AppIcon';
@@ -26,6 +27,7 @@ interface PaymentRow {
   note: string;
   createdAt: string;
   planExpiresAt: string | null;
+  gifted?: boolean;
 }
 
 const STATUS: Record<PaymentRow['status'], { text: string; cls: string }> = {
@@ -110,11 +112,40 @@ export default function BillingPage() {
     <AppLayout activePath="/billing">
       <div className="max-w-3xl mx-auto space-y-5">
         <div>
-          <h1 className="text-[22px] font-bold text-foreground">Premium / ငွေပေးချေရန်</h1>
+          <h1 className="text-[22px] font-bold text-foreground">⭐ Premium နဲ့ ပံ့ပိုးမယ်</h1>
           <p className="text-[13px] text-muted-foreground">
-            Mobile wallet နဲ့ ငွေလွှဲပြီး screenshot တင်ပါ — admin က စစ်ပြီး plan ဖွင့်ပေးပါမယ်
+            Mobile wallet နဲ့ ငွေလွှဲပြီး screenshot တင်ပါ — admin က စစ်ပြီး ၂၄ နာရီအတွင်း
+            ဖွင့်ပေးပါမယ်
           </p>
         </div>
+
+        <div className="grid sm:grid-cols-3 gap-3">
+          {[
+            [
+              '🎁',
+              'တစ်ယောက်ဝယ် တစ်ယောက်ရ',
+              'ပိုက်ဆံ မတတ်နိုင်တဲ့ ကျောင်းသား တစ်ယောက်ကို Premium လက်ဆောင် ရောက်မယ်',
+            ],
+            ['👩‍🏫', 'ဆရာတွေကို ထောက်ပံ့', 'ပေးငွေရဲ့ တစ်ဝက်က သင်ခန်းစာ တင်တဲ့ ဆရာတွေဆီ ရောက်မယ်'],
+            [
+              '⭐',
+              'Premium အကျိုးခံစားခွင့်',
+              'Premium သင်ခန်းစာ၊ AI တစ်ရက် ၂၀၀ ကြိမ်၊ Supporter badge',
+            ],
+          ].map(([icon, t, d]) => (
+            <div key={t} className="bg-card border border-border rounded-2xl p-3.5">
+              <p className="text-2xl">{icon}</p>
+              <p className="font-bold text-[13px] mt-1">{t}</p>
+              <p className="text-[11.5px] text-muted-foreground mt-0.5">{d}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[12.5px] text-muted-foreground -mt-2">
+          ပိုက်ဆံ မပေးချင်ရင်လည်း ရပါတယ် —{' '}
+          <Link href="/rewards" className="text-primary font-semibold">
+            ကြိုးစားမှုနဲ့ Premium အခမဲ့ ရယူမယ် →
+          </Link>
+        </p>
 
         {activePlan && (
           <div className="bg-success-bg border border-green-200 rounded-2xl p-4 text-[14px]">
@@ -256,6 +287,7 @@ export default function BillingPage() {
                     <p className="text-[12px] text-muted-foreground">
                       {formatMyDate(new Date(p.createdAt))}
                       {p.note && ` · ${p.note}`}
+                      {p.gifted && ' · 🎁 ကျောင်းသား တစ်ယောက်ကို လက်ဆောင် ပေးခဲ့ပါတယ်'}
                     </p>
                   </div>
                   <span

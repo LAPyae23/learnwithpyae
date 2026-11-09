@@ -5,6 +5,7 @@ import { jsonError } from '@/lib/auth';
 import { requireAdmin } from '@/lib/adminGuard';
 import { type PlanId } from '@/data/payment';
 import { getSiteSettings } from '@/lib/settings';
+import { sponsorScholarship } from '@/lib/premium';
 import { Payment } from '@/models/Payment';
 import { User } from '@/models/User';
 import { sendTelegram, telegramConfigured } from '@/lib/telegram';
@@ -68,6 +69,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const { plans } = await getSiteSettings();
   const plan = plans[payment.plan as PlanId];
   let expiresAt: Date | null = null;
+  let gifted = false;
 
   if (action === 'approve' && user) {
     // Extend from the current expiry if the plan is still active, otherwise from now
@@ -79,13 +81,22 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       { $set: { 'plan.type': payment.plan, 'plan.expiresAt': expiresAt } }
     );
     await Payment.updateOne({ _id: payment._id }, { $set: { planExpiresAt: expiresAt } });
+    // Buy one, gift one
+    const gift = await sponsorScholarship(payment._id, payment.user, plan.days).catch((e) => {
+      console.error('scholarship gift failed', e);
+      return null;
+    });
+    if (gift) {
+      gifted = true;
+      await Payment.updateOne({ _id: payment._id }, { $set: { giftedTo: gift.userId } });
+    }
   }
 
   // Let the student know on Telegram if they've connected it (best effort)
   if (user?.telegram?.chatId && telegramConfigured()) {
     const text =
       action === 'approve'
-        ? `✅ ငွေပေးချေမှု အတည်ပြုပြီးပါပြီ။ ${plan.name} Plan ကို ${expiresAt?.toISOString().slice(0, 10)} အထိ သုံးနိုင်ပါပြီ။`
+        ? `✅ ငွေပေးချေမှု အတည်ပြုပြီးပါပြီ။ ${plan.name} Plan ကို ${expiresAt?.toISOString().slice(0, 10)} အထိ သုံးနိုင်ပါပြီ။${gifted ? '\n🎁 သင့်ကြောင့် ပိုက်ဆံ မတတ်နိုင်တဲ့ ကျောင်းသား တစ်ယောက်လည်း Premium ရသွားပါပြီ — ကျေးဇူးပါ 🙏' : ''}`
         : `❌ ငွေပေးချေမှုကို အတည်မပြုနိုင်ပါ။${note ? `\nအကြောင်းရင်း: ${note}` : ''}`;
     sendTelegram(user.telegram.chatId, text).catch((e) => console.error('notify failed', e));
   }

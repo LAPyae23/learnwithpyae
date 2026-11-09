@@ -21,6 +21,7 @@ const PROTECTED = [
   '/teachers',
   '/messages',
   '/groups',
+  '/rewards',
   '/admin',
 ];
 
@@ -73,6 +74,7 @@ export const config = {
     '/teachers/:path*',
     '/messages/:path*',
     '/groups/:path*',
+    '/rewards/:path*',
     '/admin/:path*',
     '/login',
   ],

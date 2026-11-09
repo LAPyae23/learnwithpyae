@@ -126,6 +126,13 @@ const allNavItems: NavItem[] = [
     roles: ['student'],
   },
   {
+    id: 'nav-rewards',
+    label: 'Premium အခမဲ့ ရယူရန်',
+    icon: 'GiftIcon',
+    href: '/rewards',
+    section: 'account',
+  },
+  {
     id: 'nav-billing',
     label: 'Premium / ငွေပေးချေ',
     icon: 'CreditCardIcon',

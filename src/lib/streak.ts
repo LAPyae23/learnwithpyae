@@ -37,4 +37,13 @@ export async function touchStreak(userId: string, points = 1) {
     { _id: userId },
     { $set: { 'streak.current': current, 'streak.longest': longest, 'streak.lastStudyDay': today } }
   );
+
+  // Learn to earn (imported lazily to avoid a circular import through the Telegram helpers)
+  try {
+    const { onFirstStudy, onStreak } = await import('./premium');
+    if (!last) await onFirstStudy(userId);
+    await onStreak(userId, current, today);
+  } catch (e) {
+    console.error('reward check failed', e);
+  }
 }

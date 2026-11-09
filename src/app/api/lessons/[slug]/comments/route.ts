@@ -16,7 +16,12 @@ interface Row {
   text: string;
   parent: unknown;
   createdAt: Date;
-  user: { _id: unknown; name: string; role?: string } | null;
+  user: {
+    _id: unknown;
+    name: string;
+    role?: string;
+    plan?: { type?: string; expiresAt?: Date | null };
+  } | null;
 }
 
 const view = (c: Row, authorId: string, meId: string) => ({
@@ -30,6 +35,10 @@ const view = (c: Row, authorId: string, meId: string) => ({
         name: c.user.name,
         isTeacher: String(c.user._id) === authorId,
         isAdmin: c.user.role === 'admin',
+        isSupporter:
+          !!c.user.plan?.expiresAt &&
+          c.user.plan.type !== 'free' &&
+          new Date(c.user.plan.expiresAt) > new Date(),
       }
     : null,
   mine: !!c.user && String(c.user._id) === meId,
@@ -43,7 +52,7 @@ export async function GET(_req: Request, { params }: Ctx) {
   const rows = await LessonComment.find({ lesson: ctx.lesson._id })
     .sort({ createdAt: -1 })
     .limit(300)
-    .populate('user', 'name role')
+    .populate('user', 'name role plan')
     .lean<Row[]>();
   return NextResponse.json({
     comments: rows.map((c) => view(c, String(ctx.lesson.author), ctx.actor.id)),
@@ -88,7 +97,7 @@ export async function POST(req: Request, { params }: Ctx) {
     text: parsed.data.text,
     parent,
   });
-  await c.populate('user', 'name role');
+  await c.populate('user', 'name role plan');
   const stats = await refreshLessonStats(ctx.lesson._id);
   return NextResponse.json(
     {

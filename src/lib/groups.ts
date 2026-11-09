@@ -90,3 +90,49 @@ export async function groupProgress(memberIds: string[]) {
     week: Object.fromEntries(week),
   };
 }
+
+/**
+ * Weekly group prize (run by the daily cron on Mondays, Myanmar time): in every group with
+ * at least 3 members, the top scorer(s) of the past 7 days get free Premium days.
+ */
+export async function awardWeeklyGroupWinners(today = yangonDay()) {
+  const weekday = new Date(`${today}T00:00:00Z`).getUTCDay();
+  if (weekday !== 1) return { skipped: 'not Monday' };
+  const { grantPremium, EARN_RULES } = await import('./premium');
+
+  const days: string[] = [previousDay(today)];
+  for (let i = 0; i < 6; i++) days.push(previousDay(days[days.length - 1]));
+  const weekKey = days[0]; // last Sunday
+
+  const groups = await StudyGroup.find({ memberCount: { $gte: EARN_RULES.groupMinMembers } })
+    .select('name members')
+    .lean();
+  let winners = 0;
+  for (const g of groups) {
+    const ids = g.members.map((m) => m.user);
+    const rows = await DailyActivity.aggregate<{ _id: Types.ObjectId; points: number }>([
+      { $match: { user: { $in: ids }, day: { $in: days } } },
+      { $group: { _id: '$user', points: { $sum: '$points' } } },
+      { $sort: { points: -1 } },
+    ]);
+    const top = rows[0]?.points ?? 0;
+    if (top <= 0) continue;
+    for (const r of rows.filter((x) => x.points === top)) {
+      const granted = await grantPremium(r._id, EARN_RULES.groupWinnerReward, {
+        kind: 'group',
+        key: `group:${g._id}:${weekKey}:${r._id}`,
+        note: `🏆 "${g.name}" အုပ်စု အပတ်စဉ် ပြိုင်ပွဲ ပထမ (${top} မှတ်)`,
+      });
+      if (granted) {
+        winners++;
+        const { User } = await import('@/models/User');
+        const u = await User.findById(r._id).select('name').lean();
+        await systemMessage(
+          g._id,
+          `🏆 ပြီးခဲ့တဲ့အပတ် ပထမ: ${u?.name ?? ''} (${top} မှတ်) — Premium ${EARN_RULES.groupWinnerReward} ရက် ဆုရပါတယ်! 🎉`
+        );
+      }
+    }
+  }
+  return { groups: groups.length, winners };
+}

@@ -23,6 +23,8 @@ const paymentSchema = new Schema(
     reviewedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     reviewedAt: { type: Date, default: null },
     planExpiresAt: { type: Date, default: null }, // expiry granted on approval
+    // Buy one, gift one: the scholarship learner this purchase sponsored
+    giftedTo: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   },
   { timestamps: true }
 );
