@@ -3,7 +3,7 @@ import { connectDB } from './db';
 import { getSession } from './auth';
 import { User } from '@/models/User';
 
-export type Role = 'student' | 'teacher' | 'admin';
+export type Role = 'student' | 'teacher' | 'admin' | 'agency';
 
 /**
  * The signed-in user with their CURRENT role from the database (the role in the session

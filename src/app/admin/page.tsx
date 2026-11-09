@@ -12,6 +12,7 @@ import { useAdminStats } from './components/adminStats';
 import ScholarshipQueue from './components/ScholarshipQueue';
 import TeacherEarnings from './components/TeacherEarnings';
 import BookingApprovals from './components/BookingApprovals';
+import AgencyApprovals from './components/AgencyApprovals';
 
 type AdminTab =
   | 'overview'
@@ -23,6 +24,7 @@ type AdminTab =
   | 'scholarships'
   | 'earnings'
   | 'bookings'
+  | 'agencies'
   | 'settings';
 
 const tabs: { id: AdminTab; label: string; icon: string }[] = [
@@ -35,6 +37,7 @@ const tabs: { id: AdminTab; label: string; icon: string }[] = [
   { id: 'scholarships', label: 'ပညာသင်ဆု', icon: '🎓' },
   { id: 'earnings', label: 'ဆရာ ဝင်ငွေ', icon: '💵' },
   { id: 'bookings', label: '1-on-1', icon: '📅' },
+  { id: 'agencies', label: 'Agency', icon: '🏢' },
   { id: 'settings', label: 'Settings', icon: '🛠️' },
 ];
 
@@ -101,6 +104,7 @@ export default function AdminDashboardPage() {
       {activeTab === 'scholarships' && <ScholarshipQueue />}
       {activeTab === 'earnings' && <TeacherEarnings />}
       {activeTab === 'bookings' && <BookingApprovals />}
+      {activeTab === 'agencies' && <AgencyApprovals />}
       {activeTab === 'content' && (
         <div className="bg-card border border-border rounded-2xl p-6 max-w-xl">
           <p className="font-bold text-[15px] mb-1">📚 သင်ခန်းစာ စီမံရန်</p>

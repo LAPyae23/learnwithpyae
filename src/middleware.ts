@@ -23,6 +23,8 @@ const PROTECTED = [
   '/groups',
   '/rewards',
   '/classes',
+  '/jobs',
+  '/agency',
   '/book',
   '/admin',
 ];
@@ -78,6 +80,8 @@ export const config = {
     '/groups/:path*',
     '/rewards/:path*',
     '/classes/:path*',
+    '/jobs/:path*',
+    '/agency/:path*',
     '/book/:path*',
     '/admin/:path*',
     '/login',

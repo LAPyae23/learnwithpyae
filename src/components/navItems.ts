@@ -11,7 +11,7 @@ export interface NavItem {
   mobile?: boolean;
   adminOnly?: boolean;
   /** Only show to these roles (checked against the database role). */
-  roles?: ('student' | 'teacher' | 'admin')[];
+  roles?: ('student' | 'teacher' | 'admin' | 'agency')[];
 }
 
 const allNavItems: NavItem[] = [
@@ -51,6 +51,22 @@ const allNavItems: NavItem[] = [
     icon: 'UsersIcon',
     href: '/groups',
     section: 'main',
+  },
+  {
+    id: 'nav-jobs',
+    label: '🇯🇵 အလုပ်အကိုင်',
+    icon: 'BriefcaseIcon',
+    href: '/jobs',
+    section: 'main',
+    roles: ['student', 'teacher', 'admin'],
+  },
+  {
+    id: 'nav-agency',
+    label: 'Agency — ဝန်ထမ်း ရှာရန်',
+    icon: 'BuildingOffice2Icon',
+    href: '/agency',
+    section: 'main',
+    roles: ['agency'],
   },
   {
     id: 'nav-flashcards',
