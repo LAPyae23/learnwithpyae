@@ -56,7 +56,7 @@ A web application designed for Japanese language processing and translation, bui
 | Social: reactions, 5-star ratings, comments, views, teacher profiles, follow + feed | `/lesson`, `/teachers` | — |
 | Teacher ↔ admin messages | `/messages` | Admin replies notify on Telegram |
 
-**AI (free):** set `OPENROUTER_API_KEY` (https://openrouter.ai/keys, no credit card; model `openrouter/free`)
+**AI (free):** set `OPENROUTER_API_KEY` (https://openrouter.ai/keys, no credit card; free Gemma 4 models with automatic fallback)
 or `GROQ_API_KEY` (https://console.groq.com/keys). Gemini (`GEMINI_API_KEY`) and Claude (`ANTHROPIC_API_KEY`)
 also work. With no key the AI pages run in **demo mode** with canned answers marked "🧪 Demo"; set
 `AI_DEMO=off` to hide them instead. AI keys are read at build time for showing the menu, so redeploy after adding one.

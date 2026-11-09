@@ -4,7 +4,8 @@ import { z } from 'zod';
 /**
  * OpenAI-compatible chat API (OpenRouter, Groq, and others). No SDK — plain fetch + SSE.
  *
- *   OPENROUTER_API_KEY=…            → https://openrouter.ai/api/v1, model "openrouter/free"
+ *   OPENROUTER_API_KEY=…            → https://openrouter.ai/api/v1, models in OPENROUTER_MODEL
+ *                                     (comma-separated; the next one is tried if one is busy or gone)
  *   GROQ_API_KEY=…                  → https://api.groq.com/openai/v1, model "llama-3.3-70b-versatile"
  *   OPENAI_COMPAT_API_KEY / _BASE_URL / _MODEL to use any other compatible service.
  */
@@ -20,9 +21,20 @@ export class CompatApiError extends Error {
 interface CompatConfig {
   key: string;
   baseUrl: string;
-  model: string;
+  /** Tried in order: the next model is used when one is rate-limited, unavailable or removed. */
+  models: string[];
   name: string;
 }
+
+/** Free models that handle Burmese well, best first. "openrouter/free" is the last resort. */
+const OPENROUTER_DEFAULT =
+  'google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free,openrouter/free';
+
+const list = (v: string) =>
+  v
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean);
 
 export function compatConfig(realKey: (v?: string) => boolean): CompatConfig | null {
   const env = process.env;
@@ -30,7 +42,7 @@ export function compatConfig(realKey: (v?: string) => boolean): CompatConfig | n
     return {
       key: env.OPENAI_COMPAT_API_KEY!.trim(),
       baseUrl: env.OPENAI_COMPAT_BASE_URL || 'https://openrouter.ai/api/v1',
-      model: env.OPENAI_COMPAT_MODEL || 'openrouter/free',
+      models: list(env.OPENAI_COMPAT_MODEL || OPENROUTER_DEFAULT),
       name: 'openai-compatible',
     };
   }
@@ -38,7 +50,7 @@ export function compatConfig(realKey: (v?: string) => boolean): CompatConfig | n
     return {
       key: env.OPENROUTER_API_KEY!.trim(),
       baseUrl: 'https://openrouter.ai/api/v1',
-      model: env.OPENROUTER_MODEL || 'openrouter/free',
+      models: list(env.OPENROUTER_MODEL || OPENROUTER_DEFAULT),
       name: 'openrouter',
     };
   }
@@ -46,7 +58,7 @@ export function compatConfig(realKey: (v?: string) => boolean): CompatConfig | n
     return {
       key: env.GROQ_API_KEY!.trim(),
       baseUrl: 'https://api.groq.com/openai/v1',
-      model: env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+      models: list(env.GROQ_MODEL || 'llama-3.3-70b-versatile'),
       name: 'groq',
     };
   }
@@ -55,7 +67,24 @@ export function compatConfig(realKey: (v?: string) => boolean): CompatConfig | n
 
 type Msg = { role: 'system' | 'user' | 'assistant'; content: string };
 
+// Statuses worth retrying on the next model: rate limited, model gone / not found, provider down
+const RETRY_NEXT = new Set([404, 408, 429, 500, 502, 503, 504]);
+
 async function post(cfg: CompatConfig, body: Record<string, unknown>) {
+  let lastErr: CompatApiError | null = null;
+  for (const model of cfg.models) {
+    try {
+      return await postOnce(cfg, model, body);
+    } catch (e) {
+      if (!(e instanceof CompatApiError) || !RETRY_NEXT.has(e.status)) throw e;
+      console.warn(`[ai] ${model} failed (${e.status}), trying next model`);
+      lastErr = e;
+    }
+  }
+  throw lastErr ?? new CompatApiError(503, 'no model available');
+}
+
+async function postOnce(cfg: CompatConfig, model: string, body: Record<string, unknown>) {
   let res: Response;
   try {
     res = await fetch(`${cfg.baseUrl.replace(/\/$/, '')}/chat/completions`, {
@@ -67,7 +96,7 @@ async function post(cfg: CompatConfig, body: Record<string, unknown>) {
         'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://learnwithpyae.vercel.app',
         'X-Title': 'NihongoAcademy',
       },
-      body: JSON.stringify({ model: cfg.model, ...body }),
+      body: JSON.stringify({ model, ...body }),
     });
   } catch (e) {
     throw new CompatApiError(0, `connection failed: ${(e as Error).message}`);
