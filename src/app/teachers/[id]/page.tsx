@@ -3,6 +3,7 @@ import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import FollowButton from '@/components/FollowButton';
+import TutoringSlots from '@/components/TutoringSlots';
 import { api } from '@/lib/api';
 import { youTubeId } from '@/lib/youtube';
 import type { LessonItem } from '@/data/lessonMeta';
@@ -112,6 +113,8 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ id: s
               )}
             </div>
           </div>
+
+          <TutoringSlots teacherId={data.teacher.id} isMe={data.isMe} />
 
           <h2 className="font-bold text-[16px]">🎬 သင်ခန်းစာများ</h2>
           {data.lessons.length === 0 ? (

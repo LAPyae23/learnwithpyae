@@ -3,6 +3,8 @@ import { connectDB } from '@/lib/db';
 import { dailyReminderText, dueCount, sendTelegram, telegramConfigured } from '@/lib/telegram';
 import { User } from '@/models/User';
 import { awardWeeklyGroupWinners } from '@/lib/groups';
+import { fmtClassTime } from '@/lib/tutoring';
+import { Booking } from '@/models/Tutoring';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,6 +33,35 @@ export async function GET(req: Request) {
   const users = await User.find({ 'telegram.chatId': { $ne: null }, 'telegram.remindersOn': true })
     .select('name telegram.chatId streak.current')
     .lean();
+
+  // Today's 1-on-1 classes (next 24 h): remind teacher and student
+  const soon = await Booking.find({
+    status: 'confirmed',
+    startAt: { $gt: new Date(), $lt: new Date(Date.now() + 86400000) },
+  })
+    .populate<{
+      teacher: { name: string; telegram?: { chatId?: string | null } } | null;
+      student: { name: string; telegram?: { chatId?: string | null } } | null;
+    }>([
+      { path: 'teacher', select: 'name telegram.chatId' },
+      { path: 'student', select: 'name telegram.chatId' },
+    ])
+    .lean();
+  for (const b of soon) {
+    const when = fmtClassTime(b.startAt);
+    const link = b.meetingLink ? `\n🔗 ${b.meetingLink}` : '\n(meeting link မထည့်ရသေးပါ)';
+    for (const [who, other] of [
+      [b.student, b.teacher],
+      [b.teacher, b.student],
+    ] as const) {
+      if (who?.telegram?.chatId) {
+        await sendTelegram(
+          who.telegram.chatId,
+          `⏰ ဒီနေ့ ${when} — ${other?.name ?? ''} နဲ့ 1-on-1 class ရှိပါတယ်${link}`
+        ).catch(() => {});
+      }
+    }
+  }
 
   let sent = 0;
   let failed = 0;

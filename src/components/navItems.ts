@@ -126,6 +126,13 @@ const allNavItems: NavItem[] = [
     roles: ['student'],
   },
   {
+    id: 'nav-classes',
+    label: '1-on-1 class',
+    icon: 'VideoCameraIcon',
+    href: '/classes',
+    section: 'account',
+  },
+  {
     id: 'nav-rewards',
     label: 'Premium အခမဲ့ ရယူရန်',
     icon: 'GiftIcon',

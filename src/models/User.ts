@@ -30,6 +30,10 @@ const userSchema = new Schema(
       bio: { type: String, default: '', maxlength: 1500 },
       jlptLevel: { type: String, default: '' },
       followers: { type: Number, default: 0 },
+      // 1-on-1 classes
+      tutoringEnabled: { type: Boolean, default: false },
+      pricePerHour: { type: Number, default: 0, min: 0 },
+      tutoringAbout: { type: String, default: '', maxlength: 600 },
     },
     streak: {
       current: { type: Number, default: 0 },

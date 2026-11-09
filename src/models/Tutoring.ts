@@ -21,7 +21,9 @@ tutorSlotSchema.index({ teacher: 1, startAt: 1 });
  */
 const bookingSchema = new Schema(
   {
-    slot: { type: Schema.Types.ObjectId, ref: 'TutorSlot', required: true, unique: true },
+    // Not unique: a cancelled/rejected booking frees the slot for someone else.
+    // Double booking is prevented by the atomic open → booked update on the slot.
+    slot: { type: Schema.Types.ObjectId, ref: 'TutorSlot', required: true, index: true },
     teacher: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     student: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     startAt: { type: Date, required: true },
