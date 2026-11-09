@@ -1,92 +1,125 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
-import LessonVideoPlayer from './components/LessonVideoPlayer';
-import LessonContent from './components/LessonContent';
-import VocabGrammarSummary from './components/VocabGrammarSummary';
-import EmbeddedQuiz from './components/EmbeddedQuiz';
-import LessonSidebar from './components/LessonSidebar';
+import { api } from '@/lib/api';
+import { useCurrentUser } from '@/components/useCurrentUser';
+import { LEVELS, type Level, type LessonItem } from '@/data/lessonMeta';
 
-type Tab = 'content' | 'vocabulary' | 'grammar' | 'quiz';
+export default function LessonListPage() {
+  const { user } = useCurrentUser();
+  const [lessons, setLessons] = useState<LessonItem[] | null>(null);
+  const [error, setError] = useState('');
+  const [level, setLevel] = useState<Level | 'all'>('all');
 
-export default function LessonViewerPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('content');
+  useEffect(() => {
+    api<{ lessons: LessonItem[] }>('/api/lessons')
+      .then((r) => setLessons(r.lessons))
+      .catch((e) => setError(e.message));
+  }, []);
 
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'content', label: 'သင်ခန်းစာ', icon: '📖' },
-    { id: 'vocabulary', label: 'ဝေါဟာရ', icon: '🗂️' },
-    { id: 'grammar', label: 'သဒ္ဒါ', icon: '✏️' },
-    { id: 'quiz', label: 'Quiz', icon: '📝' },
-  ];
+  useEffect(() => {
+    if (user?.targetLevel && LEVELS.includes(user.targetLevel as Level)) {
+      setLevel(user.targetLevel as Level);
+    }
+  }, [user?.targetLevel]);
+
+  const shown = useMemo(
+    () => (lessons ?? []).filter((l) => level === 'all' || l.level === level),
+    [lessons, level]
+  );
+  const canTeach = user?.role === 'teacher' || user?.role === 'admin';
 
   return (
     <AppLayout activePath="/lesson">
-      {/* Lesson Header */}
-      <div className="mb-6">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-2">
-          <span>N5 သင်တန်း</span>
-          <span className="text-border">›</span>
-          <span>အခန်း ၄ — て ပုံစံ</span>
-          <span className="text-border">›</span>
-          <span className="text-foreground font-medium">သင်ခန်းစာ ၇ — て ပုံစံ ဆက်စပ်အသုံး</span>
-        </div>
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              て ပုံစံ — လုပ်ရပ်များ ဆက်ခြင်းနဲ့ တောင်းဆိုခြင်း
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              て ပုံစံကို သုံးပြီး ကြိယာတွေ ဆက်နည်းနဲ့ ယဉ်ကျေးစွာ တောင်းဆိုနည်းကို လေ့လာပါမယ်။
+            <h1 className="text-2xl font-bold text-foreground">သင်ခန်းစာများ</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              မြန်မာလို ရှင်းပြထားတဲ့ video သင်ခန်းစာတွေ
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#006633]/10 text-[#006633] border border-[#006633]/20">
-              N5 အဆင့်
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-              ⏱ 18 မိနစ်
-            </span>
+          {canTeach && (
+            <Link
+              href="/studio"
+              className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold"
+            >
+              ✏️ သင်ခန်းစာ ရေးမယ်
+            </Link>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-5">
+          {(['all', ...LEVELS] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLevel(l)}
+              className={`px-3.5 py-1.5 rounded-full border text-[13px] font-medium ${
+                level === l
+                  ? 'bg-primary text-white border-primary'
+                  : 'border-border text-muted-foreground'
+              }`}
+            >
+              {l === 'all' ? 'အားလုံး' : l}
+            </button>
+          ))}
+        </div>
+
+        {error ? (
+          <p className="text-sm text-danger">{error}</p>
+        ) : lessons === null ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-40 rounded-2xl bg-muted animate-pulse" />
+            ))}
           </div>
-        </div>
-      </div>
-
-      {/* Main Layout: Video + Sidebar */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Left: Video + Tabs */}
-        <div className="xl:col-span-2 space-y-5">
-          <LessonVideoPlayer />
-
-          {/* Tab Navigation */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="flex border-b border-border">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-3 text-[13px] md:text-sm font-medium transition-all duration-150 ${
-                    activeTab === tab.id
-                      ? 'text-[#006633] border-b-2 border-[#006633] bg-[#006633]/5'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-            <div className="p-5">
-              {activeTab === 'content' && <LessonContent />}
-              {activeTab === 'vocabulary' && <VocabGrammarSummary type="vocabulary" />}
-              {activeTab === 'grammar' && <VocabGrammarSummary type="grammar" />}
-              {activeTab === 'quiz' && <EmbeddedQuiz />}
-            </div>
+        ) : shown.length === 0 ? (
+          <div className="bg-card border border-border rounded-2xl p-8 text-center text-sm text-muted-foreground">
+            {level === 'all' ? 'သင်ခန်းစာ မရှိသေးပါ' : `${level} သင်ခန်းစာ မရှိသေးပါ`}
+            {level !== 'all' && (
+              <button onClick={() => setLevel('all')} className="block mx-auto mt-2 text-primary">
+                အားလုံး ကြည့်မယ်
+              </button>
+            )}
           </div>
-        </div>
-
-        {/* Right: Lesson Sidebar */}
-        <div className="xl:col-span-1">
-          <LessonSidebar onTabChange={setActiveTab} />
-        </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {shown.map((l) => (
+              <Link
+                key={l.id}
+                href={`/lesson/${l.slug}`}
+                className="group bg-card border border-border rounded-2xl p-4 hover:border-primary/40 hover:shadow-sm transition-all flex flex-col"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-secondary text-primary">
+                    {l.level}
+                  </span>
+                  {l.hasVideo && (
+                    <span className="text-[11px] text-muted-foreground">🎬 Video</span>
+                  )}
+                  {l.durationMin > 0 && (
+                    <span className="text-[11px] text-muted-foreground">
+                      ⏱ {l.durationMin} မိနစ်
+                    </span>
+                  )}
+                </div>
+                {l.chapter && <p className="text-[12px] text-muted-foreground">{l.chapter}</p>}
+                <h2 className="font-bold text-[15px] text-foreground group-hover:text-primary leading-snug">
+                  {l.title}
+                </h2>
+                {l.summary && (
+                  <p className="text-[13px] text-muted-foreground mt-1.5 line-clamp-2">
+                    {l.summary}
+                  </p>
+                )}
+                <p className="text-[12px] text-muted-foreground mt-auto pt-3">
+                  👩‍🏫 {l.author?.name ?? 'NihongoAcademy'}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

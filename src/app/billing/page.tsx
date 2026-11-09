@@ -8,12 +8,13 @@ import { compressImage } from '@/lib/compressImage';
 import { formatMyDate } from '@/lib/jlpt';
 import { useCurrentUser } from '@/components/useCurrentUser';
 import {
-  PAYMENT_METHODS,
-  PLANS,
-  RECEIVING_ACCOUNTS,
+  DEFAULT_SETTINGS,
+  PLAN_IDS,
   formatKs,
+  type AccountConfig,
   type PaymentMethod,
   type PlanId,
+  type SiteSettingsData,
 } from '@/data/payment';
 
 interface PaymentRow {
@@ -42,6 +43,20 @@ export default function BillingPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<PaymentRow[] | null>(null);
+  const [settings, setSettings] = useState<SiteSettingsData | null>(null);
+
+  useEffect(() => {
+    api<SiteSettingsData>('/api/settings')
+      .then((s) => {
+        setSettings(s);
+        const firstPlan = PLAN_IDS.find((id) => s.plans[id].enabled);
+        if (firstPlan && !s.plans.quarterly.enabled) setPlan(firstPlan);
+        if (s.accounts[0]) setMethod(s.accounts[0].method);
+      })
+      .catch(() => setSettings({ ...DEFAULT_SETTINGS, accounts: [] }));
+  }, []);
+  const PLANS = settings?.plans ?? DEFAULT_SETTINGS.plans;
+  const accounts: AccountConfig[] = settings?.accounts ?? [];
 
   const load = useCallback(() => {
     api<{ payments: PaymentRow[] }>('/api/payments')
@@ -82,7 +97,7 @@ export default function BillingPage() {
     }
   }
 
-  const account = RECEIVING_ACCOUNTS[method];
+  const account = accounts.find((a) => a.method === method) ?? accounts[0];
   const activePlan =
     user?.plan.type &&
     user.plan.type !== 'free' &&
@@ -113,7 +128,7 @@ export default function BillingPage() {
           <div>
             <p className="text-[13px] font-semibold mb-2">၁။ Plan ရွေးပါ</p>
             <div className="grid grid-cols-3 gap-2">
-              {(Object.keys(PLANS) as PlanId[]).map((id) => (
+              {PLAN_IDS.filter((id) => PLANS[id].enabled).map((id) => (
                 <button
                   type="button"
                   key={id}
@@ -135,7 +150,7 @@ export default function BillingPage() {
           <div>
             <p className="text-[13px] font-semibold mb-2">၂။ ဒီအကောင့်ကို ငွေလွှဲပါ</p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {PAYMENT_METHODS.map((m) => (
+              {accounts.map(({ method: m }) => (
                 <button
                   type="button"
                   key={m}
@@ -148,25 +163,31 @@ export default function BillingPage() {
                 </button>
               ))}
             </div>
-            <div className="bg-muted/50 rounded-xl p-4 flex items-center justify-between gap-3">
-              <div className="text-[14px]">
-                <p className="text-muted-foreground text-[12px]">{method}</p>
-                <p className="font-bold tabular-nums text-[16px]">{account.number}</p>
-                <p>{account.name}</p>
-                <p className="text-primary font-bold mt-1">{formatKs(PLANS[plan].amount)}</p>
+            {!account ? (
+              <p className="text-[13px] text-muted-foreground bg-muted/50 rounded-xl p-4">
+                {settings ? 'ငွေလက်ခံ အကောင့် မရှိသေးပါ။ Admin ကို ဆက်သွယ်ပါ။' : 'ခဏစောင့်ပါ…'}
+              </p>
+            ) : (
+              <div className="bg-muted/50 rounded-xl p-4 flex items-center justify-between gap-3">
+                <div className="text-[14px]">
+                  <p className="text-muted-foreground text-[12px]">{method}</p>
+                  <p className="font-bold tabular-nums text-[16px]">{account.number}</p>
+                  <p>{account.name}</p>
+                  <p className="text-primary font-bold mt-1">{formatKs(PLANS[plan].amount)}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(account.number.replace(/\D/g, ''));
+                    toast.success('ဖုန်းနံပါတ် ကူးပြီးပါပြီ');
+                  }}
+                  className="px-3 py-2 rounded-lg border border-border text-[12.5px]"
+                >
+                  <Icon name="ClipboardDocumentIcon" size={14} className="inline mr-1" />
+                  ကူးမယ်
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(account.number.replace(/\D/g, ''));
-                  toast.success('ဖုန်းနံပါတ် ကူးပြီးပါပြီ');
-                }}
-                className="px-3 py-2 rounded-lg border border-border text-[12.5px]"
-              >
-                <Icon name="ClipboardDocumentIcon" size={14} className="inline mr-1" />
-                ကူးမယ်
-              </button>
-            </div>
+            )}
             <p className="text-[12px] text-muted-foreground mt-2">
               ငွေလွှဲတဲ့အခါ note မှာ သင့် email ({user?.email ?? '…'}) ကို ရေးပေးပါ။
             </p>
@@ -206,7 +227,7 @@ export default function BillingPage() {
 
           <button
             type="submit"
-            disabled={sending || !file}
+            disabled={sending || !file || !account}
             className="w-full py-3 rounded-xl bg-primary text-white font-bold text-[15px] disabled:opacity-40"
           >
             {sending ? 'တင်နေပါတယ်…' : 'တင်မယ်'}

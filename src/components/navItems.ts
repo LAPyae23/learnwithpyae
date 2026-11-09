@@ -10,6 +10,8 @@ export interface NavItem {
   section: 'main' | 'practice' | 'ai' | 'account';
   mobile?: boolean;
   adminOnly?: boolean;
+  /** Only show to these roles (checked against the database role). */
+  roles?: ('student' | 'teacher' | 'admin')[];
 }
 
 const allNavItems: NavItem[] = [
@@ -84,6 +86,22 @@ const allNavItems: NavItem[] = [
     icon: 'BriefcaseIcon',
     href: '/interview',
     section: 'ai',
+  },
+  {
+    id: 'nav-studio',
+    label: 'သင်ခန်းစာ Studio',
+    icon: 'PencilIcon',
+    href: '/studio',
+    section: 'account',
+    roles: ['teacher', 'admin'],
+  },
+  {
+    id: 'nav-teach',
+    label: 'ဆရာ အဖြစ် ပါဝင်ရန်',
+    icon: 'AcademicCapIcon',
+    href: '/teach',
+    section: 'account',
+    roles: ['student'],
   },
   {
     id: 'nav-billing',

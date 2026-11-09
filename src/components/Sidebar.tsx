@@ -48,7 +48,9 @@ export default function Sidebar({ activePath = '/dashboard' }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
         {sections.map((section) => {
           const items = groupedItems[section]?.filter(
-            (i) => !i.adminOnly || user?.role === 'admin'
+            (i) =>
+              (!i.adminOnly || user?.role === 'admin') &&
+              (!i.roles || (!!user && i.roles.includes(user.role as 'student')))
           );
           if (!items || items.length === 0) return null;
           return (

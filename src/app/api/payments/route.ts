@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { getSession, jsonError } from '@/lib/auth';
-import { PAYMENT_METHODS, PLANS, type PaymentMethod, type PlanId } from '@/data/payment';
+import { PLAN_IDS, type PaymentMethod, type PlanId } from '@/data/payment';
+import { getSiteSettings } from '@/lib/settings';
 import { Payment } from '@/models/Payment';
 
 export const runtime = 'nodejs';
@@ -42,8 +43,11 @@ export async function POST(req: Request) {
     .slice(0, 64);
   const file = form.get('screenshot');
 
-  if (!(plan in PLANS)) return jsonError('Plan ရွေးပါ', 400);
-  if (!PAYMENT_METHODS.includes(method)) return jsonError('ငွေပေးချေမှု နည်းလမ်း ရွေးပါ', 400);
+  const settings = await getSiteSettings();
+  if (!PLAN_IDS.includes(plan) || !settings.plans[plan].enabled)
+    return jsonError('Plan ရွေးပါ', 400);
+  if (!settings.accounts.some((a) => a.enabled && a.method === method))
+    return jsonError('ငွေပေးချေမှု နည်းလမ်း ရွေးပါ', 400);
   if (!(file instanceof File) || file.size === 0) return jsonError('Screenshot တင်ပါ', 400);
   if (file.size > MAX_BYTES) return jsonError('ပုံ အရမ်းကြီးနေပါတယ် (1.5MB ထက် မကျော်ရ)', 413);
 
@@ -59,7 +63,7 @@ export async function POST(req: Request) {
   const payment = await Payment.create({
     user: session.sub,
     plan,
-    amount: PLANS[plan].amount,
+    amount: settings.plans[plan].amount,
     method,
     transactionId,
     screenshot: { data: buf, mime, size: buf.length },

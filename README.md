@@ -50,7 +50,9 @@ A web application designed for Japanese language processing and translation, bui
 | Pronunciation practice | `/speak` | Chrome / Android Chrome (Web Speech API) |
 | Offline mode (installable PWA, offline flashcards) | all | — |
 | Telegram daily reminders | profile → Telegram | `TELEGRAM_*`, `CRON_SECRET` |
-| KBZPay / WavePay screenshot → admin approval | `/billing`, `/admin` | Edit receiving accounts in `src/data/payment.ts` |
+| KBZPay / WavePay screenshot → admin approval | `/billing`, `/admin` | Accounts and prices: `/admin` → Settings |
+| Video lessons (YouTube / .mp4 link) | `/lesson`, `/studio` | Admins and teachers write them in the Studio |
+| Teachers: apply → admin approves → write lessons → admin publishes | `/teach`, `/studio`, `/admin` → ဆရာများ | — |
 
 **AI (free):** uses the Gemini API free tier — get a key at https://aistudio.google.com/apikey and set
 `GEMINI_API_KEY`. Main model `gemini-3.8-flash`, automatic fallback to `gemini-3.5-flash-lite` when rate-limited.
@@ -61,14 +63,16 @@ Claude later, set `ANTHROPIC_API_KEY` and `AI_PROVIDER=anthropic`.
 **Telegram:** create a bot with @BotFather, set the env vars on Vercel, deploy, then
 `npm run telegram:setup -- .env.production.local`. Reminders go out daily at 08:00 Myanmar time (`vercel.json`).
 
-**Admin account:** `SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='…' npm run seed -- .env.production.local`.
+**Admin account:** register on the website, then `npm run make-admin -- you@example.com .env.production.local`
+and sign out/in. (Or create one directly: `SEED_ADMIN_EMAIL=… SEED_ADMIN_PASSWORD='…' npm run seed -- .env.production.local`.)
 
 ## Content
 
 - Flashcards: `src/data/flashcards.ts` — add cards with a unique `key`, then `npm run seed` again (upserts, no duplicates).
 - Kanji for handwriting: `src/data/kanjiList.ts`, then `npm run kanji:fetch` to download stroke data.
 - Pronunciation drills: `src/data/speakPhrases.ts`.
-- Plans and prices: `src/data/payment.ts`.
+- Plans, prices and payment accounts: `/admin` → Settings (defaults in `src/data/payment.ts`).
+- Lessons: `/studio` (stored in MongoDB).
 
 ## API
 

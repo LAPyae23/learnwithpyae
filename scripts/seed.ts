@@ -15,6 +15,7 @@ import bcrypt from 'bcryptjs';
 import { decks, cards } from '../src/data/flashcards';
 import { Deck, Card } from '../src/models/Flashcard';
 import { User } from '../src/models/User';
+import { Lesson } from '../src/models/Lesson';
 
 // Optional env file argument wins (loadEnvFile never overwrites a variable already set):
 //   npm run seed -- .env.production.local
@@ -34,7 +35,12 @@ async function main() {
   await mongoose.connect(uri, { dbName: process.env.MONGODB_DB || 'nihongoacademy' });
   console.info(`Connected to ${mongoose.connection.host}/${mongoose.connection.name}`);
 
-  await Promise.all([Deck.syncIndexes(), Card.syncIndexes(), User.syncIndexes()]);
+  await Promise.all([
+    Deck.syncIndexes(),
+    Card.syncIndexes(),
+    User.syncIndexes(),
+    Lesson.syncIndexes(),
+  ]);
 
   const deckIds = new Map<string, mongoose.Types.ObjectId>();
   for (const d of decks) {
@@ -62,6 +68,29 @@ async function main() {
     );
   }
   console.info(`Upserted ${decks.length} decks, ${cards.length} cards`);
+
+  // Starter lesson. Only inserted once, so edits made in the admin Studio are never overwritten.
+  const lessonRes = await Lesson.updateOne(
+    { slug: 'n5-te-form' },
+    {
+      $setOnInsert: {
+        slug: 'n5-te-form',
+        title: 'て ပုံစံ — လုပ်ရပ်များ ဆက်ခြင်းနဲ့ တောင်းဆိုခြင်း',
+        level: 'N5',
+        chapter: 'အခန်း ၄ — て ပုံစံ',
+        summary: 'て ပုံစံကို သုံးပြီး ကြိယာတွေ ဆက်နည်းနဲ့ ယဉ်ကျေးစွာ တောင်းဆိုနည်းကို လေ့လာပါမယ်။',
+        videoUrl: 'https://www.youtube.com/watch?v=lV3znOC_bo4',
+        content: '',
+        durationMin: 18,
+        order: 7,
+        status: 'published',
+        publishedAt: new Date(),
+        author: null,
+      },
+    },
+    { upsert: true }
+  );
+  console.info(lessonRes.upsertedCount ? 'Created starter lesson' : 'Starter lesson exists');
 
   async function ensureUser(
     email: string,

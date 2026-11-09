@@ -1,22 +1,10 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { LESSON_VIDEOS, type LessonVideo } from '@/data/lessonVideos';
+import { youTubeId, youTubeStart } from '@/lib/youtube';
 
-/** Returns the YouTube video id for watch / youtu.be / shorts / embed links, else null. */
-function youTubeId(url: string): string | null {
-  try {
-    const u = new URL(url);
-    const host = u.hostname.replace(/^www\.|^m\./, '');
-    if (host === 'youtu.be') return u.pathname.slice(1) || null;
-    if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
-      if (u.searchParams.get('v')) return u.searchParams.get('v');
-      const m = u.pathname.match(/^\/(?:embed|shorts|live)\/([\w-]{6,})/);
-      return m ? m[1] : null;
-    }
-  } catch {
-    // not a URL
-  }
-  return null;
+interface LessonVideo {
+  title: string;
+  url: string;
 }
 
 function VideoArea({ video }: { video: LessonVideo }) {
@@ -27,7 +15,9 @@ function VideoArea({ video }: { video: LessonVideo }) {
     return (
       <iframe
         className="w-full h-full"
-        src={`https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1&playsinline=1`}
+        src={`https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1&playsinline=1${
+          youTubeStart(url) ? `&start=${youTubeStart(url)}` : ''
+        }`}
         title={video.title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
@@ -58,8 +48,16 @@ function VideoArea({ video }: { video: LessonVideo }) {
   );
 }
 
-export default function LessonVideoPlayer({ lessonId = 'n5-te-form' }: { lessonId?: string }) {
-  const video = LESSON_VIDEOS[lessonId] ?? { id: lessonId, title: '', url: '' };
+export default function LessonVideoPlayer({
+  lessonId,
+  title,
+  url,
+}: {
+  lessonId: string;
+  title: string;
+  url: string;
+}) {
+  const video = { title, url };
   const notesKey = `na_notes_${lessonId}`;
 
   const [showNotes, setShowNotes] = useState(false);

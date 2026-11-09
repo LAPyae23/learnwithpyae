@@ -12,7 +12,8 @@
     "type-check": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts",
     "telegram:setup": "tsx scripts/telegram-setup.ts",
-    "kanji:fetch": "tsx scripts/fetch-kanjivg.ts"
+    "kanji:fetch": "tsx scripts/fetch-kanjivg.ts",
+    "make-admin": "tsx scripts/make-admin.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",

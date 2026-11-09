@@ -3,7 +3,8 @@ import { Types } from 'mongoose';
 import { z } from 'zod';
 import { jsonError } from '@/lib/auth';
 import { requireAdmin } from '@/lib/adminGuard';
-import { PLANS, type PlanId } from '@/data/payment';
+import { type PlanId } from '@/data/payment';
+import { getSiteSettings } from '@/lib/settings';
 import { Payment } from '@/models/Payment';
 import { User } from '@/models/User';
 import { sendTelegram, telegramConfigured } from '@/lib/telegram';
@@ -64,10 +65,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (!payment) return jsonError('ဒီငွေပေးချေမှုကို စစ်ပြီးသားပါ', 409);
 
   const user = await User.findById(payment.user).select('name plan telegram').lean();
+  const { plans } = await getSiteSettings();
+  const plan = plans[payment.plan as PlanId];
   let expiresAt: Date | null = null;
 
   if (action === 'approve' && user) {
-    const plan = PLANS[payment.plan as PlanId];
     // Extend from the current expiry if the plan is still active, otherwise from now
     const currentExpiry = user.plan?.expiresAt ? new Date(user.plan.expiresAt).getTime() : 0;
     const base = Math.max(Date.now(), currentExpiry);
@@ -83,7 +85,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (user?.telegram?.chatId && telegramConfigured()) {
     const text =
       action === 'approve'
-        ? `✅ ငွေပေးချေမှု အတည်ပြုပြီးပါပြီ။ ${PLANS[payment.plan as PlanId].name} Plan ကို ${expiresAt?.toISOString().slice(0, 10)} အထိ သုံးနိုင်ပါပြီ။`
+        ? `✅ ငွေပေးချေမှု အတည်ပြုပြီးပါပြီ။ ${plan.name} Plan ကို ${expiresAt?.toISOString().slice(0, 10)} အထိ သုံးနိုင်ပါပြီ။`
         : `❌ ငွေပေးချေမှုကို အတည်မပြုနိုင်ပါ။${note ? `\nအကြောင်းရင်း: ${note}` : ''}`;
     sendTelegram(user.telegram.chatId, text).catch((e) => console.error('notify failed', e));
   }

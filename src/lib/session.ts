@@ -8,7 +8,7 @@ export const SESSION_MAX_AGE_DAYS = 30;
 
 export interface SessionPayload {
   sub: string; // user id
-  role: 'student' | 'admin';
+  role: 'student' | 'teacher' | 'admin';
   name: string;
 }
 
