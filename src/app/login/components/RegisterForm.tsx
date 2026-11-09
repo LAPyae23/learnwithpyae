@@ -100,7 +100,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       <div className="mb-5">
         <h2 className="text-[22px] font-bold text-foreground mb-1">အကောင့်ဖွင့်ပါ</h2>
         <p className="text-[14px] text-muted-foreground">
-          ၇ ရက် အခမဲ့ စမ်းသုံးနိုင်ပါတယ်။ Credit card မလိုပါ။{' '}
+          အခမဲ့ပါ — Credit card မလိုပါ။{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}

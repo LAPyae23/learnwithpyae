@@ -72,7 +72,7 @@ export default function AuthScreen() {
               { id: 'trust-burmese', icon: 'LanguageIcon', text: 'မြန်မာလို ရှင်းလင်းချက်' },
               { id: 'trust-mobile', icon: 'DevicePhoneMobileIcon', text: 'ဖုန်းနဲ့ အဆင်ပြေ' },
               { id: 'trust-pay', icon: 'WalletIcon', text: 'KBZPay / WavePay' },
-              { id: 'trust-trial', icon: 'ShieldCheckIcon', text: '၇ ရက် အခမဲ့' },
+              { id: 'trust-trial', icon: 'ShieldCheckIcon', text: 'အမြဲ အခမဲ့ လေ့လာနိုင်' },
             ].map((badge) => (
               <div
                 key={badge.id}

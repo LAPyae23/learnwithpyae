@@ -8,7 +8,7 @@ const stats = [
   { id: 'stat-levels', value: 'N5–N3', label: 'JLPT အဆင့်များ' },
   { id: 'stat-burmese', value: '100%', label: 'မြန်မာလို ရှင်းလင်းချက်' },
   { id: 'stat-mobile', value: '📱', label: 'ဖုန်းနဲ့ အလွယ်တကူ' },
-  { id: 'stat-free', value: 'အခမဲ့', label: 'စတင် စမ်းသုံးနိုင်' },
+  { id: 'stat-free', value: 'အခမဲ့', label: 'အဓိက feature အားလုံး' },
 ];
 
 export default function HeroSection() {

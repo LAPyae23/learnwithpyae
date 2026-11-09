@@ -28,7 +28,7 @@ export const CLAUDE_MODEL = process.env.AI_MODEL || 'claude-opus-5-5';
 /** Server-side refusal fallback for Claude: a declined request is retried on Anthropic's recommended model. */
 export const FALLBACK_BETA = 'server-side-fallback-2026-07-01';
 
-export const FREE_DAILY_LIMIT = Number(process.env.AI_FREE_DAILY_LIMIT || 5);
+export const FREE_DAILY_LIMIT = Number(process.env.AI_FREE_DAILY_LIMIT || 20);
 export const PAID_DAILY_LIMIT = Number(process.env.AI_PAID_DAILY_LIMIT || 200);
 
 /** True only for a real-looking key (ignores template placeholders like "your-…-here"). */
@@ -107,7 +107,11 @@ export async function remainingAiQuota(userId: string) {
     User.findById(userId).select('plan role').lean(),
     AiUsage.findOne({ user: new Types.ObjectId(userId), day: yangonDay() }).lean(),
   ]);
-  const paid = user?.role === 'admin' || (user?.plan?.type && user.plan.type !== 'free');
+  const paid =
+    user?.role === 'admin' ||
+    (user?.plan?.type &&
+      user.plan.type !== 'free' &&
+      (!user.plan.expiresAt || new Date(user.plan.expiresAt) > new Date()));
   const limit = paid ? PAID_DAILY_LIMIT : FREE_DAILY_LIMIT;
   return { limit, used: usage?.count ?? 0, paid: !!paid };
 }

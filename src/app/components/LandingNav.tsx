@@ -70,7 +70,7 @@ export default function LandingNav() {
               href="/login"
               className="whitespace-nowrap bg-white text-primary text-[14px] font-bold px-5 py-2 rounded-lg hover:bg-secondary transition-colors shadow-sm"
             >
-              အခမဲ့ စမ်းသုံးမယ်
+              အခမဲ့ စလေ့လာမယ်
             </Link>
           </div>
 
@@ -115,7 +115,7 @@ export default function LandingNav() {
                   href="/login"
                   className="text-center px-4 py-2.5 rounded-lg bg-primary text-white font-bold text-[14px]"
                 >
-                  အခမဲ့ စမ်းသုံးမယ်
+                  အခမဲ့ စလေ့လာမယ်
                 </Link>
               </div>
             </div>
