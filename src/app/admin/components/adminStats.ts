@@ -14,7 +14,12 @@ export interface AdminStats {
     signupsByDay: { day: string; n: number }[];
   };
   learning: { cardsReviewed7: number; exams30: number; examAvgPct: number };
-  content: { lessons: Record<string, number>; pendingTeachers: number; pendingPayments: number };
+  content: {
+    lessons: Record<string, number>;
+    pendingTeachers: number;
+    pendingPayments: number;
+    unreadTickets: number;
+  };
   revenue: {
     thisMonth: { total: number; count: number };
     lastMonth: { total: number; count: number };

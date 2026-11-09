@@ -21,6 +21,13 @@ const userSchema = new Schema(
       linkCode: { type: String, default: null, index: true },
       linkCodeExpiresAt: { type: Date, default: null },
     },
+    // Public teacher profile (shown on /teachers/[id])
+    teacherProfile: {
+      headline: { type: String, default: '', maxlength: 120 },
+      bio: { type: String, default: '', maxlength: 1500 },
+      jlptLevel: { type: String, default: '' },
+      followers: { type: Number, default: 0 },
+    },
     streak: {
       current: { type: Number, default: 0 },
       longest: { type: Number, default: 0 },

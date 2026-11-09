@@ -1,9 +1,16 @@
 import { imageHosts } from './image-hosts.config.mjs';
 
-// AI features (AI tutor, interview, "why was I wrong") are shown only when a real AI key is set.
+// AI features (AI tutor, interview, "why was I wrong") are shown when an AI key is set, or in demo mode.
 // Computed at build time, so add a key on Vercel and redeploy to turn them on.
 const realKey = (v) => !!v?.trim() && !/your-|here$|^x+$|placeholder/i.test(v.trim());
-const aiEnabled = realKey(process.env.GEMINI_API_KEY) || realKey(process.env.ANTHROPIC_API_KEY);
+const aiEnabled =
+  [
+    'OPENAI_COMPAT_API_KEY',
+    'OPENROUTER_API_KEY',
+    'GROQ_API_KEY',
+    'GEMINI_API_KEY',
+    'ANTHROPIC_API_KEY',
+  ].some((k) => realKey(process.env[k])) || process.env.AI_DEMO !== 'off'; // demo mode (canned answers) when there's no key
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

@@ -8,15 +8,18 @@ import { connectDB } from './db';
 import { yangonDay } from './streak';
 import { AiUsage } from '@/models/AiUsage';
 import { User } from '@/models/User';
+import { CompatApiError, compatConfig, compatJson, compatStream } from './aiCompat';
+import { demoJson, demoStream } from './aiDemo';
 
 /**
- * AI provider layer.
+ * AI provider layer. First match wins (AI_PROVIDER can force one):
  *
- * - Gemini (default when GEMINI_API_KEY is set): uses the Gemini API free tier, so the site costs nothing to run.
- *   Note: on the free tier Google may use prompts/responses to improve its products.
- * - Claude (when ANTHROPIC_API_KEY is set and AI_PROVIDER=anthropic, or no Gemini key): paid, higher quality.
+ * - OpenAI-compatible (OPENROUTER_API_KEY / GROQ_API_KEY / OPENAI_COMPAT_*): free tiers, work from Myanmar.
+ * - Gemini (GEMINI_API_KEY): free tier, but not available in every country.
+ * - Claude (ANTHROPIC_API_KEY): paid, highest quality.
+ * - Demo (no key at all, unless AI_DEMO=off): canned answers clearly marked as a demo.
  */
-export type AiProvider = 'gemini' | 'anthropic';
+export type AiProvider = 'compat' | 'gemini' | 'anthropic' | 'demo';
 
 export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 /** Used automatically when the main free-tier model is rate-limited. */
@@ -29,18 +32,23 @@ export const FREE_DAILY_LIMIT = Number(process.env.AI_FREE_DAILY_LIMIT || 5);
 export const PAID_DAILY_LIMIT = Number(process.env.AI_PAID_DAILY_LIMIT || 200);
 
 /** True only for a real-looking key (ignores template placeholders like "your-…-here"). */
-function realKey(value: string | undefined) {
+function realKey(value?: string) {
   const key = value?.trim();
   return !!key && !/your-|here$|^x+$|placeholder/i.test(key);
 }
 
 export function activeProvider(): AiProvider | null {
+  const hasCompat = !!compatConfig(realKey);
   const hasGemini = realKey(process.env.GEMINI_API_KEY);
   const hasClaude = realKey(process.env.ANTHROPIC_API_KEY);
-  if (process.env.AI_PROVIDER === 'anthropic' && hasClaude) return 'anthropic';
+  const forced = process.env.AI_PROVIDER;
+  if (forced === 'anthropic' && hasClaude) return 'anthropic';
+  if (forced === 'gemini' && hasGemini) return 'gemini';
+  if (forced === 'demo') return 'demo';
+  if (hasCompat) return 'compat';
   if (hasGemini) return 'gemini';
   if (hasClaude) return 'anthropic';
-  return null;
+  return process.env.AI_DEMO === 'off' ? null : 'demo';
 }
 
 let anthropic: Anthropic | null = null;
@@ -49,7 +57,7 @@ const getAnthropic = () => (anthropic ??= new Anthropic());
 const getGemini = () => (gemini ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }));
 
 export const AI_NOT_CONFIGURED =
-  'AI ဆရာကို မဖွင့်ရသေးပါ (GEMINI_API_KEY မထည့်ရသေးပါ)။ Admin ကို ဆက်သွယ်ပါ။';
+  'AI ဆရာကို မဖွင့်ရသေးပါ (OPENROUTER_API_KEY မထည့်ရသေးပါ)။ Admin ကို ဆက်သွယ်ပါ။';
 
 // ---------------------------------------------------------------------------
 // Daily allowance
@@ -150,6 +158,18 @@ async function withGeminiFallback<T>(run: (model: string) => Promise<T>): Promis
 
 /** Yields text chunks from whichever provider is active. */
 async function* streamChunks(provider: AiProvider, req: AiRequest): AsyncGenerator<string> {
+  if (provider === 'demo') {
+    yield* demoStream(req);
+    return;
+  }
+  if (provider === 'compat') {
+    yield* compatStream(
+      compatConfig(realKey)!,
+      [{ role: 'system', content: req.system }, ...req.messages],
+      req.maxTokens
+    );
+    return;
+  }
   if (provider === 'gemini') {
     const stream = await withGeminiFallback((model) =>
       getGemini().models.generateContentStream({
@@ -231,6 +251,18 @@ export async function generateAiJson<S extends z.ZodType>(
   const provider = activeProvider();
   if (!provider) throw new Error('AI not configured');
 
+  if (provider === 'demo') {
+    const parsed = schema.safeParse(demoJson(req.system));
+    return parsed.success ? parsed.data : null;
+  }
+  if (provider === 'compat') {
+    return compatJson(
+      compatConfig(realKey)!,
+      [{ role: 'system', content: req.system }, ...req.messages],
+      req.maxTokens,
+      schema
+    );
+  }
   if (provider === 'gemini') {
     const res = await withGeminiFallback((model) =>
       getGemini().models.generateContent({
@@ -265,6 +297,12 @@ export async function generateAiJson<S extends z.ZodType>(
 }
 
 export function aiErrorMessage(err: unknown) {
+  if (err instanceof CompatApiError) {
+    if (err.status === 429) return 'AI ဆရာ အလုပ်များနေပါတယ်။ ခဏနေမှ ပြန်မေးပါ။';
+    if (err.status === 401 || err.status === 403) return 'AI key မှားနေပါတယ်။ Admin ကို ဆက်သွယ်ပါ။';
+    if (err.status === 0) return 'AI server ကို ချိတ်ဆက်လို့ မရပါ။ ပြန်စမ်းကြည့်ပါ။';
+    return 'AI ဆရာ ခဏ ပြဿနာ ရှိနေပါတယ်။ ပြန်စမ်းကြည့်ပါ။';
+  }
   if (err instanceof GeminiApiError) {
     if (err.status === 429) return 'AI ဆရာ အလုပ်များနေပါတယ်။ ခဏနေမှ ပြန်မေးပါ။';
     if (err.status === 400 || err.status === 401 || err.status === 403)
@@ -281,6 +319,7 @@ export function aiErrorMessage(err: unknown) {
 }
 
 export function aiErrorStatus(err: unknown) {
+  if (err instanceof CompatApiError && err.status === 429) return 429;
   if (err instanceof GeminiApiError && err.status === 429) return 429;
   if (err instanceof Anthropic.RateLimitError) return 429;
   return 502;

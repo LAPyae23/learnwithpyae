@@ -97,6 +97,12 @@ export default function AdminDashboardPage() {
               စစ်ရန် သင်ခန်းစာများ
             </Link>
             <Link
+              href="/messages"
+              className="px-4 py-2 rounded-xl border border-border text-sm font-semibold"
+            >
+              📥 ဆရာတွေဆီက စာများ
+            </Link>
+            <Link
               href="/studio?new=1"
               className="px-4 py-2 rounded-xl border border-border text-sm font-semibold"
             >

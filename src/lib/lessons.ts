@@ -18,6 +18,7 @@ export const LessonInput = z.object({
   content: z.string().max(20000).optional(),
   durationMin: z.number().int().min(0).max(600).optional(),
   order: z.number().int().min(-10000).max(10000).optional(),
+  access: z.enum(['free', 'premium']).optional(),
   // Teacher: submit for review. Admin: choose the status directly.
   submit: z.boolean().optional(),
   status: z.enum(LESSON_STATUSES).optional(),
@@ -40,6 +41,14 @@ interface LessonLike {
   durationMin?: number | null;
   order?: number | null;
   status: string;
+  access?: string | null;
+  stats?: {
+    views?: number | null;
+    comments?: number | null;
+    ratingCount?: number | null;
+    ratingAvg?: number | null;
+    reactions?: Record<string, number | null> | null;
+  } | null;
   reviewNote?: string | null;
   author?: { _id: unknown; name?: string } | unknown;
   updatedAt?: Date;
@@ -63,6 +72,20 @@ export function serializeLesson(l: LessonLike, withContent = false) {
     durationMin: l.durationMin ?? 0,
     order: l.order ?? 0,
     status: l.status,
+    access: (l.access === 'premium' ? 'premium' : 'free') as 'free' | 'premium',
+    stats: {
+      views: l.stats?.views ?? 0,
+      comments: l.stats?.comments ?? 0,
+      ratingCount: l.stats?.ratingCount ?? 0,
+      ratingAvg: l.stats?.ratingAvg ?? 0,
+      reactions: {
+        love: l.stats?.reactions?.love ?? 0,
+        clap: l.stats?.reactions?.clap ?? 0,
+        fire: l.stats?.reactions?.fire ?? 0,
+        wow: l.stats?.reactions?.wow ?? 0,
+        thanks: l.stats?.reactions?.thanks ?? 0,
+      },
+    },
     reviewNote: l.reviewNote ?? '',
     author: author ? { id: String(author._id), name: author.name ?? '' } : null,
     updatedAt: l.updatedAt ?? null,
@@ -70,3 +93,17 @@ export function serializeLesson(l: LessonLike, withContent = false) {
   };
 }
 export type LessonDTO = ReturnType<typeof serializeLesson> & { content?: string };
+
+/** True if the user can watch premium lessons. */
+export function hasPremium(user: {
+  role?: string | null;
+  plan?: { type?: string | null; expiresAt?: Date | null } | null;
+}) {
+  if (user.role === 'admin' || user.role === 'teacher') return true;
+  return (
+    !!user.plan?.type &&
+    user.plan.type !== 'free' &&
+    !!user.plan.expiresAt &&
+    new Date(user.plan.expiresAt) > new Date()
+  );
+}

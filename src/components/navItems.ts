@@ -39,6 +39,13 @@ const allNavItems: NavItem[] = [
     section: 'main',
   },
   {
+    id: 'nav-teachers',
+    label: 'ဆရာ / ဆရာမများ',
+    icon: 'UserGroupIcon',
+    href: '/teachers',
+    section: 'main',
+  },
+  {
     id: 'nav-flashcards',
     label: 'Flashcard',
     shortLabel: 'Flashcard',
@@ -92,6 +99,14 @@ const allNavItems: NavItem[] = [
     label: 'သင်ခန်းစာ Studio',
     icon: 'PencilIcon',
     href: '/studio',
+    section: 'account',
+    roles: ['teacher', 'admin'],
+  },
+  {
+    id: 'nav-messages',
+    label: 'Admin ထံ စာများ',
+    icon: 'ChatBubbleLeftRightIcon',
+    href: '/messages',
     section: 'account',
     roles: ['teacher', 'admin'],
   },

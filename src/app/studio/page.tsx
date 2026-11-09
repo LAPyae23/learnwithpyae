@@ -29,6 +29,7 @@ interface Draft {
   durationMin: number;
   order: number;
   status: LessonStatus;
+  access: 'free' | 'premium';
   reviewNote: string;
 }
 
@@ -42,6 +43,7 @@ const EMPTY: Draft = {
   durationMin: 0,
   order: 0,
   status: 'draft',
+  access: 'free',
   reviewNote: '',
 };
 
@@ -55,6 +57,7 @@ const toDraft = (l: LessonItem): Draft => ({
   durationMin: l.durationMin,
   order: l.order,
   status: l.status,
+  access: l.access ?? 'free',
   reviewNote: l.reviewNote,
 });
 
@@ -103,6 +106,7 @@ function Editor({
       content: d.content,
       durationMin: d.durationMin,
       order: d.order,
+      access: d.access,
     };
     if (mode === 'admin') {
       body.status = d.status;
@@ -209,6 +213,34 @@ function Editor({
           maxLength={400}
         />
       </label>
+
+      <div>
+        <p className="text-[13px] font-semibold mb-1.5">ဘယ်သူတွေ ကြည့်လို့ရမလဲ?</p>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              ['free', '🆓 Free', 'ကျောင်းသား အားလုံး ကြည့်လို့ရမယ် — follower တိုးဖို့ ကောင်းတယ်'],
+              ['premium', '⭐ Premium', 'Premium ဝယ်ထားတဲ့သူတွေပဲ ကြည့်လို့ရမယ်'],
+            ] as const
+          ).map(([id, label, desc]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setD({ ...d, access: id })}
+              className={`text-left p-3 rounded-xl border-2 transition-colors ${
+                d.access === id
+                  ? id === 'premium'
+                    ? 'border-yellow-400 bg-yellow-50'
+                    : 'border-primary bg-secondary'
+                  : 'border-border'
+              }`}
+            >
+              <p className="font-bold text-[14px]">{label}</p>
+              <p className="text-[11.5px] text-muted-foreground mt-0.5">{desc}</p>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <label className="block text-[13px] font-semibold">
         Video link (YouTube ဒါမှမဟုတ် .mp4)
@@ -340,6 +372,92 @@ function Editor({
   );
 }
 
+/** The teacher's public profile (shown on /teachers/[id]). */
+function ProfileEditor() {
+  const [p, setP] = useState<{ id: string; headline: string; bio: string } | null>(null);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    api<{ id: string; headline: string; bio: string }>('/api/teacher/profile')
+      .then(setP)
+      .catch(() => setP(null));
+  }, []);
+  if (!p) return null;
+
+  async function save() {
+    setSaving(true);
+    try {
+      await api('/api/teacher/profile', {
+        method: 'PUT',
+        json: { headline: p!.headline, bio: p!.bio },
+      });
+      toast.success('Profile သိမ်းပြီးပါပြီ');
+      setOpen(false);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-2xl p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="font-bold text-[14px]">👩‍🏫 ကျွန်ုပ်၏ ဆရာ Profile</p>
+          <p className="text-[12.5px] text-muted-foreground">
+            {p.headline || 'ကျောင်းသားတွေ မြင်ရမယ့် ကိုယ့်အကြောင်း ထည့်ပါ'}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href={`/teachers/${p.id}`}
+            className="px-3 py-1.5 rounded-lg border border-border text-[12.5px]"
+          >
+            ကြည့်မယ်
+          </Link>
+          <button
+            onClick={() => setOpen(!open)}
+            className="px-3 py-1.5 rounded-lg bg-primary text-white text-[12.5px] font-semibold"
+          >
+            {open ? 'ပိတ်မယ်' : 'ပြင်မယ်'}
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div className="mt-3 space-y-3">
+          <label className="block text-[13px] font-semibold">
+            တစ်ကြောင်း မိတ်ဆက်
+            <input
+              className={`${field} mt-1`}
+              value={p.headline}
+              maxLength={120}
+              onChange={(e) => setP({ ...p, headline: e.target.value })}
+              placeholder="ဥပမာ - N5 ကနေ N3 အထိ လွယ်လွယ်ကူကူ သင်ပေးမယ့် ဆရာမ"
+            />
+          </label>
+          <label className="block text-[13px] font-semibold">
+            ကိုယ့်အကြောင်း
+            <textarea
+              className={`${field} mt-1 min-h-[100px]`}
+              value={p.bio}
+              maxLength={1500}
+              onChange={(e) => setP({ ...p, bio: e.target.value })}
+            />
+          </label>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="px-5 py-2 rounded-xl bg-primary text-white font-bold text-[13.5px] disabled:opacity-40"
+          >
+            {saving ? 'သိမ်းနေပါတယ်…' : 'သိမ်းမယ်'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Studio() {
   const router = useRouter();
   const params = useSearchParams();
@@ -409,6 +527,7 @@ function Studio() {
         <Editor key={editing ?? 'new'} slug={editing} isAdmin={isAdmin} onDone={closeEditor} />
       ) : (
         <>
+          <ProfileEditor />
           {isAdmin && (
             <div className="flex gap-2">
               {(
@@ -451,6 +570,8 @@ function Studio() {
                       <p className="text-[12px] text-muted-foreground truncate">
                         {l.author?.name ?? 'NihongoAcademy'}
                         {l.hasVideo ? ' · 🎬' : ''}
+                        {l.access === 'premium' ? ' · ⭐ Premium' : ' · Free'}
+                        {l.status === 'published' ? ` · 👁 ${l.stats.views}` : ''}
                         {l.reviewNote ? ` · ${l.reviewNote}` : ''}
                       </p>
                     </div>

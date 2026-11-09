@@ -8,6 +8,7 @@ import { CardReview } from '@/models/Flashcard';
 import { ExamAttempt } from '@/models/ExamAttempt';
 import { Lesson } from '@/models/Lesson';
 import { TeacherApplication } from '@/models/TeacherApplication';
+import { Ticket } from '@/models/Ticket';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -67,6 +68,7 @@ export async function GET() {
     revByPlan,
     revByMethod,
     recentPayments,
+    unreadTickets,
   ] = await Promise.all([
     User.countDocuments(),
     User.aggregate<{ _id: string; n: number }>([{ $group: { _id: '$role', n: { $sum: 1 } } }]),
@@ -135,6 +137,7 @@ export async function GET() {
       .select('user plan amount method reviewedAt')
       .populate<{ user: { name: string; email: string } | null }>('user', 'name email')
       .lean(),
+    Ticket.countDocuments({ unreadByAdmin: true, status: { $ne: 'closed' } }),
   ]);
 
   // Fill gaps so charts have one bar per day / month
@@ -177,6 +180,7 @@ export async function GET() {
       lessons: byKey(lessonsByStatus, 'n'),
       pendingTeachers,
       pendingPayments,
+      unreadTickets,
     },
     revenue: {
       thisMonth: revThisMonth,

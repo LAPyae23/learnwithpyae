@@ -11,6 +11,26 @@ export const STATUS_LABEL: Record<LessonStatus, { text: string; cls: string }> =
   rejected: { text: 'ပြန်ပြင်ရန်', cls: 'bg-danger-bg text-danger' },
 };
 
+export const REACTIONS = [
+  { id: 'love', emoji: '❤️', label: 'ချစ်တယ်' },
+  { id: 'clap', emoji: '👏', label: 'ကောင်းတယ်' },
+  { id: 'fire', emoji: '🔥', label: 'မိုက်တယ်' },
+  { id: 'wow', emoji: '😮', label: 'အံ့ဩ' },
+  { id: 'thanks', emoji: '🙏', label: 'ကျေးဇူး' },
+] as const;
+export type ReactionId = (typeof REACTIONS)[number]['id'];
+
+export interface LessonStats {
+  views: number;
+  comments: number;
+  ratingCount: number;
+  ratingAvg: number;
+  reactions: Record<ReactionId, number>;
+}
+
+export const totalReactions = (s: LessonStats) =>
+  Object.values(s.reactions).reduce((a, b) => a + b, 0);
+
 export interface LessonItem {
   id: string;
   slug: string;
@@ -23,6 +43,9 @@ export interface LessonItem {
   durationMin: number;
   order: number;
   status: LessonStatus;
+  access: 'free' | 'premium';
+  locked?: boolean;
+  stats: LessonStats;
   reviewNote: string;
   author: { id: string; name: string } | null;
   updatedAt: string | null;

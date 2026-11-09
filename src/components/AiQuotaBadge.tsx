@@ -7,6 +7,7 @@ export interface Quota {
   used: number;
   paid: boolean;
   enabled: boolean;
+  provider?: string | null;
 }
 
 /** Shows today's remaining AI uses. Pass `refreshKey` to re-fetch after each request. */
@@ -23,6 +24,16 @@ export default function AiQuotaBadge({ refreshKey = 0 }: { refreshKey?: number }
     return (
       <span className="text-[11.5px] font-semibold px-2.5 py-1 rounded-full bg-warning-bg text-warning">
         AI မဖွင့်ရသေးပါ
+      </span>
+    );
+  }
+  if (q.provider === 'demo') {
+    return (
+      <span
+        title="AI key မထည့်ရသေးလို့ နမူနာ အဖြေတွေပဲ ပြပါတယ်"
+        className="text-[11.5px] font-semibold px-2.5 py-1 rounded-full bg-warning-bg text-warning"
+      >
+        🧪 Demo mode — AI အစစ် မဟုတ်ပါ
       </span>
     );
   }

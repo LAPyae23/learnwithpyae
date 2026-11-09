@@ -45,7 +45,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const user = await User.findById(app.user).select('role telegram').lean();
   if (user && user.role !== 'admin') {
-    if (action === 'approve') await User.updateOne({ _id: app.user }, { role: 'teacher' });
+    if (action === 'approve') {
+      await User.updateOne(
+        { _id: app.user },
+        {
+          role: 'teacher',
+          // Start the public profile from the application (the teacher can edit it later)
+          'teacherProfile.bio': app.bio || app.experience || '',
+          'teacherProfile.jlptLevel': app.jlptLevel === 'none' ? '' : app.jlptLevel,
+        }
+      );
+    }
     if (action === 'revoke') {
       await User.updateOne({ _id: app.user }, { role: 'student' });
       await Lesson.updateMany(

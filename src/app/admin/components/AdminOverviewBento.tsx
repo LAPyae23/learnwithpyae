@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 import { formatKs } from '@/data/payment';
 import { bars, type AdminStats } from './adminStats';
 
@@ -65,6 +66,15 @@ export default function AdminOverviewBento({
 
   return (
     <div className="space-y-5">
+      {content.unreadTickets > 0 && (
+        <Link
+          href="/messages"
+          className="block bg-warning-bg border border-warning/50 rounded-2xl p-4 hover:border-primary/40"
+        >
+          <p className="text-[12px] text-muted-foreground">📥 ဆရာတွေဆီက မဖတ်ရသေးတဲ့ စာ</p>
+          <p className="text-[24px] font-bold">{content.unreadTickets}</p>
+        </Link>
+      )}
       {(content.pendingPayments > 0 || content.pendingTeachers > 0 || pendingLessons > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {content.pendingPayments > 0 && (

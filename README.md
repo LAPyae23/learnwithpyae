@@ -52,13 +52,15 @@ A web application designed for Japanese language processing and translation, bui
 | Telegram daily reminders | profile → Telegram | `TELEGRAM_*`, `CRON_SECRET` |
 | KBZPay / WavePay screenshot → admin approval | `/billing`, `/admin` | Accounts and prices: `/admin` → Settings |
 | Video lessons (YouTube / .mp4 link) | `/lesson`, `/studio` | Admins and teachers write them in the Studio |
-| Teachers: apply → admin approves → write lessons → admin publishes | `/teach`, `/studio`, `/admin` → ဆရာများ | — |
+| Teachers: apply → admin approves → write lessons (Free / Premium) → admin publishes | `/teach`, `/studio`, `/admin` → ဆရာများ | — |
+| Social: reactions, 5-star ratings, comments, views, teacher profiles, follow + feed | `/lesson`, `/teachers` | — |
+| Teacher ↔ admin messages | `/messages` | Admin replies notify on Telegram |
 
-**AI (free):** uses the Gemini API free tier — get a key at https://aistudio.google.com/apikey and set
-`GEMINI_API_KEY`. Main model `gemini-3.8-flash`, automatic fallback to `gemini-3.5-flash-lite` when rate-limited.
-Each learner gets `AI_FREE_DAILY_LIMIT` uses per day (default 5) so the site stays inside the free tier; failed calls
-are not counted. On the free tier Google may use prompts and answers to improve its products. To switch to paid
-Claude later, set `ANTHROPIC_API_KEY` and `AI_PROVIDER=anthropic`.
+**AI (free):** set `OPENROUTER_API_KEY` (https://openrouter.ai/keys, no credit card; model `openrouter/free`)
+or `GROQ_API_KEY` (https://console.groq.com/keys). Gemini (`GEMINI_API_KEY`) and Claude (`ANTHROPIC_API_KEY`)
+also work. With no key the AI pages run in **demo mode** with canned answers marked "🧪 Demo"; set
+`AI_DEMO=off` to hide them instead. AI keys are read at build time for showing the menu, so redeploy after adding one.
+Each learner gets `AI_FREE_DAILY_LIMIT` uses per day (default 5); failed calls are not counted.
 
 **Telegram:** create a bot with @BotFather, set the env vars on Vercel, deploy, then
 `npm run telegram:setup -- .env.production.local`. Reminders go out daily at 08:00 Myanmar time (`vercel.json`).

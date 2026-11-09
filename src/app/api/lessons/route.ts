@@ -4,6 +4,8 @@ import { canTeach, getActor } from '@/lib/roles';
 import { LessonInput, newLessonSlug, serializeLesson } from '@/lib/lessons';
 import { Lesson, LESSON_STATUSES, type LessonStatus } from '@/models/Lesson';
 import '@/models/User';
+import { isValidObjectId } from 'mongoose';
+import { Follow } from '@/models/Social';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,11 +33,28 @@ export async function GET(req: Request) {
     filter = status && LESSON_STATUSES.includes(status) ? { status } : {};
   } else {
     filter = { status: 'published' };
+    // Feed of teachers I follow
+    if (params.get('following') === '1') {
+      const follows = await Follow.find({ follower: actor.id }).select('teacher').lean();
+      filter.author = { $in: follows.map((f) => f.teacher) };
+    }
+    const teacher = params.get('teacher');
+    if (teacher && isValidObjectId(teacher)) filter.author = teacher;
   }
+  const popular = params.get('sort') === 'popular';
+  const latest = params.get('sort') === 'new';
 
   const lessons = await Lesson.find(filter)
     .select(LIST_FIELDS)
-    .sort(scope === 'published' ? { level: -1, order: 1, publishedAt: 1 } : { updatedAt: -1 })
+    .sort(
+      scope !== 'published'
+        ? { updatedAt: -1 }
+        : popular
+          ? { 'stats.views': -1, 'stats.ratingAvg': -1 }
+          : latest
+            ? { publishedAt: -1 }
+            : { level: -1, order: 1, publishedAt: 1 }
+    )
     .limit(500)
     .populate('author', 'name')
     .lean();

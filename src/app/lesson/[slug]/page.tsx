@@ -7,7 +7,21 @@ import { api } from '@/lib/api';
 import { useCurrentUser } from '@/components/useCurrentUser';
 import LessonVideoPlayer from '../components/LessonVideoPlayer';
 import TeFormTabs from '../components/TeFormTabs';
-import { LEGACY_TE_FORM_SLUG, STATUS_LABEL, type LessonItem } from '@/data/lessonMeta';
+import { CommentSection, PremiumLock, ReactionBar } from '../components/LessonSocial';
+import FollowButton from '@/components/FollowButton';
+import {
+  LEGACY_TE_FORM_SLUG,
+  STATUS_LABEL,
+  type LessonItem,
+  type ReactionId,
+} from '@/data/lessonMeta';
+
+interface Me {
+  reaction: ReactionId | null;
+  stars: number | null;
+  isAuthor: boolean;
+  followingAuthor?: boolean;
+}
 
 export default function LessonViewerPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -15,12 +29,14 @@ export default function LessonViewerPage({ params }: { params: Promise<{ slug: s
   const [lesson, setLesson] = useState<LessonItem | null>(null);
   const [others, setOthers] = useState<LessonItem[]>([]);
   const [error, setError] = useState('');
+  const [me, setMe] = useState<Me>({ reaction: null, stars: null, isAuthor: false });
 
   useEffect(() => {
     setLesson(null);
-    api<{ lesson: LessonItem }>(`/api/lessons/${encodeURIComponent(slug)}`)
+    api<{ lesson: LessonItem; me: Me }>(`/api/lessons/${encodeURIComponent(slug)}`)
       .then((r) => {
         setLesson(r.lesson);
+        setMe(r.me);
         return api<{ lessons: LessonItem[] }>('/api/lessons').then((l) =>
           setOthers(l.lessons.filter((o) => o.level === r.lesson.level && o.slug !== slug))
         );
@@ -68,13 +84,44 @@ export default function LessonViewerPage({ params }: { params: Promise<{ slug: s
                 {lesson.summary && (
                   <p className="text-muted-foreground mt-1 text-sm">{lesson.summary}</p>
                 )}
-                <p className="text-[13px] text-muted-foreground mt-2">
-                  👩‍🏫 {lesson.author?.name ?? 'NihongoAcademy'}
-                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  {lesson.author ? (
+                    <>
+                      <Link
+                        href={`/teachers/${lesson.author.id}`}
+                        className="flex items-center gap-2 text-[13.5px] font-semibold hover:text-primary"
+                      >
+                        <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-[13px]">
+                          {Array.from(lesson.author.name)[0]}
+                        </span>
+                        {lesson.author.name}
+                      </Link>
+                      {user && user.id !== lesson.author.id && (
+                        <FollowButton
+                          key={String(me.followingAuthor)}
+                          teacherId={lesson.author.id}
+                          following={!!me.followingAuthor}
+                          size="sm"
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[13px] text-muted-foreground">👩‍🏫 NihongoAcademy</span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#006633]/10 text-[#006633] border border-[#006633]/20">
                   {lesson.level} အဆင့်
+                </span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    lesson.access === 'premium'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-success-bg text-success'
+                  }`}
+                >
+                  {lesson.access === 'premium' ? '⭐ Premium' : '🆓 Free'}
                 </span>
                 {lesson.durationMin > 0 && (
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
@@ -102,17 +149,40 @@ export default function LessonViewerPage({ params }: { params: Promise<{ slug: s
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 space-y-5">
-              <LessonVideoPlayer
-                lessonId={lesson.slug}
-                title={lesson.title}
-                url={lesson.videoUrl}
-              />
-              {lesson.content?.trim() && (
+              {lesson.locked ? (
+                <PremiumLock title={lesson.title} />
+              ) : (
+                <LessonVideoPlayer
+                  lessonId={lesson.slug}
+                  title={lesson.title}
+                  url={lesson.videoUrl}
+                />
+              )}
+              {lesson.status === 'published' && (
+                <ReactionBar
+                  slug={lesson.slug}
+                  stats={lesson.stats}
+                  me={me}
+                  onChange={(stats, m) => {
+                    setLesson({ ...lesson, stats });
+                    setMe(m);
+                  }}
+                />
+              )}
+              {!lesson.locked && lesson.content?.trim() && (
                 <div className="bg-card border border-border rounded-xl p-5">
                   <RichText text={lesson.content} className="text-[14.5px]" />
                 </div>
               )}
               {lesson.slug === LEGACY_TE_FORM_SLUG && <TeFormTabs />}
+              {lesson.status === 'published' && (
+                <CommentSection
+                  slug={lesson.slug}
+                  onCount={(n) =>
+                    setLesson((l) => (l ? { ...l, stats: { ...l.stats, comments: n } } : l))
+                  }
+                />
+              )}
             </div>
 
             <aside className="xl:col-span-1">
@@ -130,7 +200,7 @@ export default function LessonViewerPage({ params }: { params: Promise<{ slug: s
                           href={`/lesson/${o.slug}`}
                           className="block px-3 py-2 rounded-lg hover:bg-muted text-[13.5px]"
                         >
-                          {o.hasVideo ? '🎬 ' : '📖 '}
+                          {o.access === 'premium' ? '⭐ ' : o.hasVideo ? '🎬 ' : '📖 '}
                           {o.title}
                         </Link>
                       </li>

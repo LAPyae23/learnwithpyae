@@ -20,6 +20,22 @@ const lessonSchema = new Schema(
     durationMin: { type: Number, default: 0, min: 0, max: 600 },
     order: { type: Number, default: 0 },
     status: { type: String, enum: LESSON_STATUSES, default: 'draft', index: true },
+    // Chosen by the teacher: free for everyone, or premium members only
+    access: { type: String, enum: ['free', 'premium'], default: 'free' },
+    // Engagement counters (recomputed from LessonVote / LessonComment / LessonView)
+    stats: {
+      views: { type: Number, default: 0 },
+      comments: { type: Number, default: 0 },
+      ratingCount: { type: Number, default: 0 },
+      ratingAvg: { type: Number, default: 0 },
+      reactions: {
+        love: { type: Number, default: 0 },
+        clap: { type: Number, default: 0 },
+        fire: { type: Number, default: 0 },
+        wow: { type: Number, default: 0 },
+        thanks: { type: Number, default: 0 },
+      },
+    },
     reviewNote: { type: String, default: '', maxlength: 300 },
     author: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     publishedAt: { type: Date, default: null },

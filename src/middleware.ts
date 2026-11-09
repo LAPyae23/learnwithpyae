@@ -18,6 +18,8 @@ const PROTECTED = [
   '/profile',
   '/teach',
   '/studio',
+  '/teachers',
+  '/messages',
   '/admin',
 ];
 
@@ -67,6 +69,8 @@ export const config = {
     '/profile/:path*',
     '/teach/:path*',
     '/studio/:path*',
+    '/teachers/:path*',
+    '/messages/:path*',
     '/admin/:path*',
     '/login',
   ],
