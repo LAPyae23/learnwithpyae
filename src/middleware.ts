@@ -20,6 +20,7 @@ const PROTECTED = [
   '/studio',
   '/teachers',
   '/messages',
+  '/groups',
   '/admin',
 ];
 
@@ -71,6 +72,7 @@ export const config = {
     '/studio/:path*',
     '/teachers/:path*',
     '/messages/:path*',
+    '/groups/:path*',
     '/admin/:path*',
     '/login',
   ],

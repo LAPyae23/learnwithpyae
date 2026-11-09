@@ -55,6 +55,7 @@ A web application designed for Japanese language processing and translation, bui
 | Teachers: apply → admin approves → write lessons (Free / Premium) → admin publishes | `/teach`, `/studio`, `/admin` → ဆရာများ | — |
 | Social: reactions, 5-star ratings, comments, views, teacher profiles, follow + feed | `/lesson`, `/teachers` | — |
 | Teacher ↔ admin messages | `/messages` | Admin replies notify on Telegram |
+| Study groups: invite code / public, group streak, weekly leaderboard, chat, nudges | `/groups` | Nudges go to Telegram when connected |
 
 **AI (free):** set `OPENROUTER_API_KEY` (https://openrouter.ai/keys, no credit card; free Gemma 4 models with automatic fallback)
 or `GROQ_API_KEY` (https://console.groq.com/keys). Gemini (`GEMINI_API_KEY`) and Claude (`ANTHROPIC_API_KEY`)

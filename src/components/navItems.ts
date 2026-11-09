@@ -46,6 +46,13 @@ const allNavItems: NavItem[] = [
     section: 'main',
   },
   {
+    id: 'nav-groups',
+    label: 'စာလုပ်ဖော် အုပ်စု',
+    icon: 'UsersIcon',
+    href: '/groups',
+    section: 'main',
+  },
+  {
     id: 'nav-flashcards',
     label: 'Flashcard',
     shortLabel: 'Flashcard',

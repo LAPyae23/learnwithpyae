@@ -68,7 +68,7 @@ ${transcript}`,
     if (!result) {
       return jsonError('အမှတ်ပေးလို့ မရပါ။ ပြန်စမ်းကြည့်ပါ။', 502);
     }
-    await touchStreak(session.sub);
+    await touchStreak(session.sub, 5);
     return NextResponse.json({ result });
   } catch (err) {
     console.error('Interview score error', err);

@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     totalScore: data.sectionResults.reduce((s, r) => s + r.score, 0),
     totalQuestions: data.sectionResults.reduce((s, r) => s + r.total, 0),
   });
-  await touchStreak(session.sub);
+  await touchStreak(session.sub, 10);
 
   return NextResponse.json({ id: String(attempt._id) }, { status: 201 });
 }

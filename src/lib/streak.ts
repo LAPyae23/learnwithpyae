@@ -1,4 +1,6 @@
+import { Types } from 'mongoose';
 import { User } from '@/models/User';
+import { DailyActivity } from '@/models/Group';
 
 /** Calendar day in Myanmar time (UTC+6:30), so a streak day matches the learner's local midnight. */
 export function yangonDay(d = new Date()) {
@@ -11,11 +13,21 @@ function previousDay(day: string) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Call after any study activity. Idempotent within a day. */
-export async function touchStreak(userId: string) {
+export { previousDay };
+
+/**
+ * Call after any study activity. The streak part is idempotent within a day; `points` are added
+ * to today's activity (used by study-group streaks and leaderboards).
+ */
+export async function touchStreak(userId: string, points = 1) {
+  const today = yangonDay();
+  await DailyActivity.updateOne(
+    { user: new Types.ObjectId(userId), day: today },
+    { $inc: { points }, $setOnInsert: { createdAt: new Date() } },
+    { upsert: true }
+  );
   const user = await User.findById(userId).select('streak');
   if (!user) return;
-  const today = yangonDay();
   const last = user.streak?.lastStudyDay ?? null;
   if (last === today) return;
 
