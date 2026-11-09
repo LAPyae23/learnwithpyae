@@ -10,5 +10,7 @@ export async function GET() {
   return NextResponse.json({
     plans: s.plans,
     accounts: s.accounts.filter((a) => a.enabled),
+    teacherSharePct: s.teacherSharePct,
+    tutorCommissionPct: s.tutorCommissionPct,
   });
 }

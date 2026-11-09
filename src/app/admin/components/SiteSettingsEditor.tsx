@@ -144,6 +144,34 @@ export default function SiteSettingsEditor() {
         </div>
       </section>
 
+      <section className="bg-card border border-border rounded-2xl p-5">
+        <h2 className="font-bold text-[15px] mb-4">👩‍🏫 ဆရာ ဝင်ငွေ ခွဲဝေမှု</h2>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <label className="text-[12.5px] text-muted-foreground">
+            Premium ဝင်ငွေထဲက ဆရာတွေကို ခွဲဝေမယ့် % (သင်ခန်းစာ ကြည့်ရှုမှုအလိုက်)
+            <input
+              className={`${input} mt-1`}
+              type="number"
+              min={0}
+              max={100}
+              value={s.teacherSharePct}
+              onChange={(e) => setS({ ...s, teacherSharePct: Number(e.target.value) })}
+            />
+          </label>
+          <label className="text-[12.5px] text-muted-foreground">
+            1-on-1 class ကြေးထဲက platform ယူမယ့် % (ကျန်တာ ဆရာရ)
+            <input
+              className={`${input} mt-1`}
+              type="number"
+              min={0}
+              max={100}
+              value={s.tutorCommissionPct}
+              onChange={(e) => setS({ ...s, tutorCommissionPct: Number(e.target.value) })}
+            />
+          </label>
+        </div>
+      </section>
+
       <button
         onClick={save}
         disabled={saving}

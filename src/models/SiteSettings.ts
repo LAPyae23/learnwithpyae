@@ -29,6 +29,8 @@ const siteSettingsSchema = new Schema(
         enabled: { type: Boolean, default: false },
       },
     ],
+    teacherSharePct: { type: Number, min: 0, max: 100 },
+    tutorCommissionPct: { type: Number, min: 0, max: 100 },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   },
   { timestamps: true }

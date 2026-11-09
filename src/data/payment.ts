@@ -26,6 +26,10 @@ export interface AccountConfig {
 export interface SiteSettingsData {
   plans: Record<PlanId, PlanConfig>;
   accounts: AccountConfig[];
+  /** % of Premium revenue shared with teachers, split by lesson views */
+  teacherSharePct: number;
+  /** % the platform keeps from 1-on-1 class fees */
+  tutorCommissionPct: number;
 }
 
 export const DEFAULT_SETTINGS: SiteSettingsData = {
@@ -40,6 +44,8 @@ export const DEFAULT_SETTINGS: SiteSettingsData = {
     { method: 'AYA Pay', name: '', number: '', enabled: false },
     { method: 'CB Pay', name: '', number: '', enabled: false },
   ],
+  teacherSharePct: 50,
+  tutorCommissionPct: 20,
 };
 
 /** Default plan names, for labels where the live settings aren't loaded. */

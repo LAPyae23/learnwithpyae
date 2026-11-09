@@ -10,6 +10,7 @@ import TeacherApplications from './components/TeacherApplications';
 import SiteSettingsEditor from './components/SiteSettingsEditor';
 import { useAdminStats } from './components/adminStats';
 import ScholarshipQueue from './components/ScholarshipQueue';
+import TeacherEarnings from './components/TeacherEarnings';
 
 type AdminTab =
   | 'overview'
@@ -19,6 +20,7 @@ type AdminTab =
   | 'users'
   | 'revenue'
   | 'scholarships'
+  | 'earnings'
   | 'settings';
 
 const tabs: { id: AdminTab; label: string; icon: string }[] = [
@@ -29,6 +31,7 @@ const tabs: { id: AdminTab; label: string; icon: string }[] = [
   { id: 'users', label: 'Users', icon: '👥' },
   { id: 'revenue', label: 'ဝင်ငွေ', icon: '💰' },
   { id: 'scholarships', label: 'ပညာသင်ဆု', icon: '🎓' },
+  { id: 'earnings', label: 'ဆရာ ဝင်ငွေ', icon: '💵' },
   { id: 'settings', label: 'Settings', icon: '🛠️' },
 ];
 
@@ -93,6 +96,7 @@ export default function AdminDashboardPage() {
       {activeTab === 'teachers' && <TeacherApplications />}
       {activeTab === 'settings' && <SiteSettingsEditor />}
       {activeTab === 'scholarships' && <ScholarshipQueue />}
+      {activeTab === 'earnings' && <TeacherEarnings />}
       {activeTab === 'content' && (
         <div className="bg-card border border-border rounded-2xl p-6 max-w-xl">
           <p className="font-bold text-[15px] mb-1">📚 သင်ခန်းစာ စီမံရန်</p>

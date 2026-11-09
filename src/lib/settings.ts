@@ -17,7 +17,12 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
       doc?.accounts?.find((a) => a.method === method) ??
       DEFAULT_SETTINGS.accounts.find((a) => a.method === method)!
   );
-  return { plans, accounts };
+  return {
+    plans,
+    accounts,
+    teacherSharePct: doc?.teacherSharePct ?? DEFAULT_SETTINGS.teacherSharePct,
+    tutorCommissionPct: doc?.tutorCommissionPct ?? DEFAULT_SETTINGS.tutorCommissionPct,
+  };
 }
 
 const planInput = z.object({
@@ -40,6 +45,8 @@ export const SettingsInput = z
         })
       )
       .max(PAYMENT_METHODS.length),
+    teacherSharePct: z.number().int().min(0).max(100),
+    tutorCommissionPct: z.number().int().min(0).max(100),
   })
   .refine((s) => s.accounts.every((a) => !a.enabled || (a.number && a.name)), {
     message: 'ဖွင့်ထားတဲ့ အကောင့်တိုင်းမှာ အမည်နဲ့ ဖုန်းနံပါတ် ထည့်ပါ',
