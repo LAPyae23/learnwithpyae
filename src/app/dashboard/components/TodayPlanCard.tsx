@@ -6,13 +6,13 @@ import { STATUS_LABELS, TASK_LABELS, usePlan } from '@/components/usePlan';
 /** Dashboard card: today's tasks from the study planner + pass estimate. */
 export default function TodayPlanCard() {
   const { data } = usePlan();
-  if (!data) return <div className="h-28 bg-muted rounded-2xl animate-pulse mb-6" />;
+  if (!data) return <div className="h-28 bg-muted rounded-2xl animate-pulse" />;
   const { plan } = data;
   const today = plan.week[0];
   const status = STATUS_LABELS[plan.status];
 
   return (
-    <div className="bg-card border border-border rounded-2xl shadow-card p-5 mb-6">
+    <div className="bg-card border border-border rounded-2xl p-4">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div>
           <h3 className="font-bold text-[15px] text-foreground">ဒီနေ့ လုပ်ရမယ့်အရာ</h3>

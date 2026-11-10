@@ -1,5 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+import React, { Suspense, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AppLayout from '@/components/AppLayout';
 import AdminOverviewBento from './components/AdminOverviewBento';
 import UserManagementTable from './components/UserManagementTable';
@@ -42,32 +43,40 @@ const tabs: { id: AdminTab; label: string; icon: string }[] = [
 ];
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  return (
+    <AppLayout>
+      <Suspense fallback={<div className="h-64 rounded-2xl bg-muted animate-pulse" />}>
+        <AdminDashboard />
+      </Suspense>
+    </AppLayout>
+  );
+}
+
+/** The tab lives in the URL (?tab=), so the phone menu and the browser back button work. */
+function AdminDashboard() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const t = params.get('tab') as AdminTab | null;
+  const activeTab: AdminTab = t && tabs.some((x) => x.id === t) ? t : 'overview';
   const { stats, error, reload } = useAdminStats();
 
-  const open = (tab: AdminTab) => {
-    // Numbers may have changed after approving payments, teachers, etc.
-    if (tab === 'overview' || tab === 'revenue') reload();
-    setActiveTab(tab);
-  };
+  // Numbers may have changed after approving payments, teachers, etc.
+  useEffect(() => {
+    if (activeTab === 'overview' || activeTab === 'revenue') reload();
+  }, [activeTab, reload]);
+
+  const open = (tab: AdminTab) => router.push(`/admin?tab=${tab}`);
 
   return (
-    <AppLayout activePath="/admin">
+    <>
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-1">
-          <div>
-            <h1 className="text-[24px] font-bold text-foreground tracking-tight">
-              Admin Dashboard
-            </h1>
-            <p className="text-[13px] text-muted-foreground mt-0.5">
-              ငွေပေးချေမှု၊ ဆရာ၊ သင်ခန်းစာ၊ user တွေကို စီမံရန်
-            </p>
-          </div>
-        </div>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-[20px] md:text-[24px] font-bold text-foreground tracking-tight">
+          {tabs.find((x) => x.id === activeTab)?.icon} {tabs.find((x) => x.id === activeTab)?.label}
+        </h1>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-1 mt-5 border-b border-border overflow-x-auto">
+        {/* Desktop tabs (on phones the bottom bar and "more" sheet switch tabs) */}
+        <div className="hidden md:flex items-center gap-1 mt-4 border-b border-border overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -135,6 +144,6 @@ export default function AdminDashboardPage() {
         </div>
       )}
       {activeTab === 'revenue' && <RevenueAnalytics stats={stats} error={error} />}
-    </AppLayout>
+    </>
   );
 }

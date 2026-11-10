@@ -3,162 +3,129 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Icon from '@/components/ui/AppIcon';
 import AppLogo from '@/components/ui/AppLogo';
-import { pageTitles } from './navItems';
+import { api } from '@/lib/api';
 import { daysUntil, nextJlptDate } from '@/lib/jlpt';
-import { initial, useCurrentUser } from './useCurrentUser';
+import { MODES, pageTitles } from './navItems';
+import { useMode } from './useMode';
+import { initial } from './useCurrentUser';
 
-export default function DashboardTopbar({ activePath = '/dashboard' }: { activePath?: string }) {
-  const [notifOpen, setNotifOpen] = useState(false);
+interface Notice {
+  id: string;
+  icon: string;
+  text: string;
+  href: string;
+}
+
+/** Top bar: page title, exam countdown (students), real notifications, avatar. */
+export default function DashboardTopbar() {
+  const { mode, user, current } = useMode();
+  const [open, setOpen] = useState(false);
   const [examDays, setExamDays] = useState<number | null>(null);
-  const { user } = useCurrentUser();
+  const [notices, setNotices] = useState<Notice[]>([]);
 
+  useEffect(() => setExamDays(daysUntil(nextJlptDate())), []);
   useEffect(() => {
-    setExamDays(daysUntil(nextJlptDate()));
-  }, []);
+    if (!user) return;
+    api<{ notices: Notice[] }>(`/api/me/notifications?mode=${mode}`)
+      .then((r) => setNotices(r.notices))
+      .catch(() => setNotices([]));
+  }, [user, mode, current]);
 
-  const notifications = [
-    {
-      id: 'notif-001',
-      text: 'ဒီနေ့ ပြန်လှန်ရမယ့် flashcard ၂၄ ခု ရှိပါတယ်',
-      time: '၂ မိနစ်အကြာ',
-      icon: 'RectangleStackIcon',
-      unread: true,
-    },
-    {
-      id: 'notif-002',
-      text: 'N5 mock test ရလဒ် ထွက်ပါပြီ',
-      time: '၁ နာရီအကြာ',
-      icon: 'DocumentTextIcon',
-      unread: true,
-    },
-    {
-      id: 'notif-003',
-      text: 'သင်ခန်းစာအသစ် — て ပုံစံ',
-      time: '၃ နာရီအကြာ',
-      icon: 'BookOpenIcon',
-      unread: false,
-    },
-    {
-      id: 'notif-004',
-      text: '၁၄ ရက် ဆက်တိုက် လေ့လာပြီးပါပြီ! ဆက်ကြိုးစားပါ',
-      time: '၁ ရက်အကြာ',
-      icon: 'FireIcon',
-      unread: false,
-    },
-  ];
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const title = pageTitles[current] ?? pageTitles[current.split('?')[0]] ?? MODES[mode].label;
 
   return (
-    <header className="h-14 md:h-16 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-20">
-      {/* Left: Breadcrumb */}
-      <div className="flex items-center gap-2 text-[13px] min-w-0">
-        <span className="md:hidden">
+    <header className="h-14 md:h-16 bg-card border-b border-border flex items-center justify-between gap-2 px-4 md:px-6 flex-shrink-0 z-20">
+      <div className="flex items-center gap-2 min-w-0">
+        <Link href={MODES[mode].home} className="md:hidden flex-shrink-0">
           <AppLogo size={28} />
+        </Link>
+        <span className="font-bold text-[15px] md:text-[14px] md:font-semibold text-foreground truncate">
+          {title}
         </span>
-        <span className="hidden md:inline text-muted-foreground">JLPT N5 သင်တန်း</span>
-        <Icon
-          name="ChevronRightIcon"
-          size={14}
-          className="hidden md:inline text-muted-foreground"
-        />
-        <span className="font-semibold text-foreground truncate">
-          {pageTitles[activePath] ?? 'NihongoAcademy'}
-        </span>
+        {mode !== 'student' && (
+          <span className="flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-primary">
+            {MODES[mode].emoji} {MODES[mode].label}
+          </span>
+        )}
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-3">
-        {/* Exam countdown chip */}
-        <div className="hidden md:flex items-center gap-1.5 bg-warning-bg border border-amber-200 rounded-full px-3 py-1">
-          <Icon name="CalendarDaysIcon" size={13} className="text-warning" />
-          <span className="text-[12px] font-semibold text-warning">
-            JLPT စာမေးပွဲ {examDays ?? '—'} ရက်အလို
-          </span>
-        </div>
+      <div className="flex items-center gap-2 md:gap-3">
+        {mode === 'student' && examDays !== null && (
+          <Link
+            href="/plan"
+            className="hidden sm:flex items-center gap-1.5 bg-warning-bg border border-amber-200 rounded-full px-3 py-1"
+          >
+            <Icon name="CalendarDaysIcon" size={13} className="text-warning" />
+            <span className="text-[12px] font-semibold text-warning">JLPT {examDays} ရက်အလို</span>
+          </Link>
+        )}
 
-        {/* Search */}
-        <button className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="ရှာရန်">
-          <Icon name="MagnifyingGlassIcon" size={18} className="text-muted-foreground" />
-        </button>
-
-        {/* Notifications */}
         <div className="relative">
           <button
-            onClick={() => setNotifOpen(!notifOpen)}
-            className="p-2 rounded-lg hover:bg-muted transition-colors relative"
+            onClick={() => setOpen(!open)}
+            className="p-2 rounded-full hover:bg-muted relative"
             aria-label="အသိပေးချက်များ"
           >
-            <Icon name="BellIcon" size={18} className="text-muted-foreground" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full" />
+            <Icon name="BellIcon" size={20} className="text-muted-foreground" />
+            {notices.length > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {notices.length}
+              </span>
             )}
           </button>
-
-          {notifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-80 bg-card border border-border rounded-xl shadow-modal z-50 overflow-hidden animate-fade-in">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <span className="font-semibold text-[14px]">အသိပေးချက်များ</span>
-                <span className="text-[11px] text-primary font-semibold cursor-pointer hover:underline">
-                  အားလုံး ဖတ်ပြီး
-                </span>
-              </div>
-              <div className="max-h-72 overflow-y-auto">
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`flex items-start gap-3 px-4 py-3 hover:bg-muted cursor-pointer transition-colors ${n.unread ? 'bg-secondary/30' : ''}`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${n.unread ? 'bg-secondary' : 'bg-muted'}`}
-                    >
-                      <Icon
-                        name={n.icon as Parameters<typeof Icon>[0]['name']}
-                        size={15}
-                        className={n.unread ? 'text-primary' : 'text-muted-foreground'}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-[13px] leading-snug ${n.unread ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
+          {open && (
+            <>
+              <button
+                className="fixed inset-0 z-40 cursor-default"
+                onClick={() => setOpen(false)}
+                aria-label="ပိတ်ရန်"
+              />
+              <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-80 bg-card border border-border rounded-2xl shadow-modal z-50 overflow-hidden">
+                <p className="px-4 py-3 border-b border-border font-semibold text-[14px]">
+                  အသိပေးချက်များ
+                </p>
+                {notices.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
+                    အသစ် မရှိပါ 🎉
+                  </p>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto divide-y divide-border">
+                    {notices.map((n) => (
+                      <Link
+                        key={n.id}
+                        href={n.href}
+                        onClick={() => setOpen(false)}
+                        className="flex items-start gap-3 px-4 py-3 hover:bg-muted"
                       >
-                        {n.text}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{n.time}</p>
-                    </div>
-                    {n.unread && (
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0" />
-                    )}
+                        <span className="text-[18px] leading-none mt-0.5">{n.icon}</span>
+                        <span className="text-[13px] leading-snug">{n.text}</span>
+                      </Link>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-              <div className="px-4 py-2 border-t border-border">
-                <span className="text-[12px] text-primary font-semibold cursor-pointer hover:underline">
-                  အသိပေးချက် အားလုံး ကြည့်ရန်
-                </span>
-              </div>
-            </div>
+            </>
           )}
         </div>
 
-        {/* User avatar */}
-        <Link href="/profile" className="flex items-center gap-2.5 pl-2">
-          <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-white text-[13px] font-bold">
+        <Link href="/profile" className="flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-white text-[13px] font-bold">
             {initial(user?.name)}
-          </div>
-          <div className="hidden md:block">
-            <p className="text-[13px] font-semibold text-foreground leading-tight">
+          </span>
+          <span className="hidden md:block">
+            <span className="block text-[13px] font-semibold text-foreground leading-tight">
               {user?.name ?? ''}
-            </p>
-            <p className="text-[11px] text-muted-foreground leading-tight">
-              {user?.role === 'admin' ? 'Admin' : `${user?.targetLevel ?? 'N5'} ကျောင်းသား`}
-            </p>
-          </div>
-          <Icon
-            name="ChevronDownIcon"
-            size={14}
-            className="text-muted-foreground hidden md:block"
-          />
+            </span>
+            <span className="block text-[11px] text-muted-foreground leading-tight">
+              {user?.role === 'admin'
+                ? 'Admin'
+                : user?.role === 'teacher'
+                  ? 'ဆရာ'
+                  : user?.role === 'agency'
+                    ? 'Agency'
+                    : `${user?.targetLevel ?? 'N5'} ကျောင်းသား`}
+            </span>
+          </span>
         </Link>
       </div>
     </header>

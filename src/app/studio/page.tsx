@@ -8,8 +8,6 @@ import RichText from '@/components/RichText';
 import { api } from '@/lib/api';
 import { youTubeId } from '@/lib/youtube';
 import { useCurrentUser } from '@/components/useCurrentUser';
-import EarningsCard from './EarningsCard';
-import TutoringManager from './TutoringManager';
 import {
   LEVELS,
   STATUS_LABEL,
@@ -529,9 +527,7 @@ function Studio() {
         <Editor key={editing ?? 'new'} slug={editing} isAdmin={isAdmin} onDone={closeEditor} />
       ) : (
         <>
-          {!isAdmin && <EarningsCard />}
           <ProfileEditor />
-          <TutoringManager />
           {isAdmin && (
             <div className="flex gap-2">
               {(

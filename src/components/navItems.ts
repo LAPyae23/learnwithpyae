@@ -1,196 +1,211 @@
 import { AI_ENABLED } from '@/lib/features';
 
+/**
+ * Navigation is split into "modes", like switching between a personal profile and a page:
+ * each role gets its own home, menu and phone tab bar. Teachers and admins can switch to
+ * the student mode to learn.
+ */
+export type Mode = 'student' | 'teacher' | 'agency' | 'admin';
+export type Role = 'student' | 'teacher' | 'admin' | 'agency';
+
 export interface NavItem {
-  id: string;
+  href: string;
   label: string;
   shortLabel?: string;
   icon: string;
-  href: string;
-  badge?: number;
-  section: 'main' | 'practice' | 'ai' | 'account';
-  mobile?: boolean;
-  adminOnly?: boolean;
-  /** Only show to these roles (checked against the database role). */
-  roles?: ('student' | 'teacher' | 'admin' | 'agency')[];
+  /** Only for these roles (e.g. "become a teacher" only for students) */
+  roles?: Role[];
 }
 
-const allNavItems: NavItem[] = [
-  {
-    id: 'nav-dashboard',
-    label: 'ပင်မစာမျက်နှာ',
-    shortLabel: 'ပင်မ',
-    icon: 'HomeIcon',
-    href: '/dashboard',
-    section: 'main',
-    mobile: true,
+export interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+export interface ModeConfig {
+  id: Mode;
+  label: string;
+  emoji: string;
+  home: string;
+  /** Phone tab bar (4 tabs + "more") */
+  tabs: NavItem[];
+  /** Sidebar / "more" sheet */
+  sections: NavSection[];
+}
+
+const ai = (items: NavItem[]) => (AI_ENABLED ? items : []);
+
+export const MODES: Record<Mode, ModeConfig> = {
+  student: {
+    id: 'student',
+    label: 'ကျောင်းသား',
+    emoji: '🎓',
+    home: '/dashboard',
+    tabs: [
+      { href: '/dashboard', label: 'ပင်မ', icon: 'HomeIcon' },
+      { href: '/lesson', label: 'သင်ခန်းစာ', icon: 'PlayCircleIcon' },
+      { href: '/flashcards', label: 'Flashcard', icon: 'RectangleStackIcon' },
+      { href: '/groups', label: 'အုပ်စု', icon: 'UsersIcon' },
+    ],
+    sections: [
+      {
+        label: 'လေ့လာရန်',
+        items: [
+          { href: '/dashboard', label: 'ပင်မစာမျက်နှာ', icon: 'HomeIcon' },
+          { href: '/lesson', label: 'သင်ခန်းစာများ', icon: 'PlayCircleIcon' },
+          { href: '/flashcards', label: 'Flashcard', icon: 'RectangleStackIcon' },
+          { href: '/exam', label: 'JLPT Mock Test', icon: 'DocumentTextIcon' },
+          { href: '/plan', label: 'လေ့လာရေး အစီအစဉ်', icon: 'CalendarDaysIcon' },
+        ],
+      },
+      {
+        label: 'လေ့ကျင့်ရန်',
+        items: [
+          { href: '/kanji', label: 'Kanji လက်ရေး', icon: 'PencilSquareIcon' },
+          { href: '/speak', label: 'အသံထွက် လေ့ကျင့်', icon: 'SpeakerWaveIcon' },
+          ...ai([
+            { href: '/sensei', label: 'AI ဆရာ', icon: 'SparklesIcon' },
+            { href: '/interview', label: 'အင်တာဗျူး လေ့ကျင့်', icon: 'BriefcaseIcon' },
+          ]),
+        ],
+      },
+      {
+        label: 'အတူတူ',
+        items: [
+          { href: '/groups', label: 'စာလုပ်ဖော် အုပ်စု', icon: 'UsersIcon' },
+          { href: '/teachers', label: 'ဆရာ / ဆရာမများ', icon: 'UserGroupIcon' },
+          { href: '/classes', label: '1-on-1 class', icon: 'VideoCameraIcon' },
+        ],
+      },
+      {
+        label: 'အနာဂတ်',
+        items: [
+          { href: '/jobs', label: '🇯🇵 အလုပ်အကိုင်', icon: 'BuildingOffice2Icon' },
+          { href: '/rewards', label: 'Premium အခမဲ့ ရယူရန်', icon: 'GiftIcon' },
+          { href: '/billing', label: 'Premium / ပံ့ပိုးရန်', icon: 'CreditCardIcon' },
+          {
+            href: '/teach',
+            label: 'ဆရာ အဖြစ် ပါဝင်ရန်',
+            icon: 'AcademicCapIcon',
+            roles: ['student'],
+          },
+          { href: '/profile', label: 'ကိုယ်ရေးအချက်အလက်', icon: 'UserCircleIcon' },
+        ],
+      },
+    ],
   },
-  {
-    id: 'nav-plan',
-    label: 'လေ့လာရေး အစီအစဉ်',
-    icon: 'CalendarDaysIcon',
-    href: '/plan',
-    section: 'main',
+  teacher: {
+    id: 'teacher',
+    label: 'ဆရာ',
+    emoji: '👩‍🏫',
+    home: '/teacher',
+    tabs: [
+      { href: '/teacher', label: 'ပင်မ', icon: 'HomeIcon' },
+      { href: '/studio', label: 'သင်ခန်းစာ', icon: 'PencilIcon' },
+      { href: '/teacher/classes', label: '1-on-1', icon: 'VideoCameraIcon' },
+      { href: '/messages', label: 'စာများ', icon: 'ChatBubbleLeftRightIcon' },
+    ],
+    sections: [
+      {
+        label: 'ဆရာ',
+        items: [
+          { href: '/teacher', label: 'ဆရာ ပင်မ', icon: 'HomeIcon' },
+          { href: '/studio', label: 'သင်ခန်းစာ Studio', icon: 'PencilIcon' },
+          { href: '/teacher/classes', label: '1-on-1 class စီမံရန်', icon: 'VideoCameraIcon' },
+          { href: '/messages', label: 'Admin ထံ စာများ', icon: 'ChatBubbleLeftRightIcon' },
+          { href: '/teachers', label: 'ဆရာများ', icon: 'UserGroupIcon' },
+          { href: '/profile', label: 'ကိုယ်ရေးအချက်အလက်', icon: 'UserCircleIcon' },
+        ],
+      },
+    ],
   },
-  {
-    id: 'nav-lessons',
-    label: 'သင်ခန်းစာများ',
-    icon: 'PlayCircleIcon',
-    href: '/lesson',
-    section: 'main',
+  agency: {
+    id: 'agency',
+    label: 'Agency',
+    emoji: '🏢',
+    home: '/agency',
+    tabs: [
+      { href: '/agency', label: 'ဝန်ထမ်း ရှာ', icon: 'MagnifyingGlassIcon' },
+      { href: '/profile', label: 'ကျွန်ုပ်', icon: 'UserCircleIcon' },
+    ],
+    sections: [
+      {
+        label: 'Agency',
+        items: [
+          { href: '/agency', label: 'ဝန်ထမ်း ရှာရန်', icon: 'MagnifyingGlassIcon' },
+          { href: '/profile', label: 'အကောင့်', icon: 'UserCircleIcon' },
+        ],
+      },
+    ],
   },
-  {
-    id: 'nav-teachers',
-    label: 'ဆရာ / ဆရာမများ',
-    icon: 'UserGroupIcon',
-    href: '/teachers',
-    section: 'main',
-  },
-  {
-    id: 'nav-groups',
-    label: 'စာလုပ်ဖော် အုပ်စု',
-    icon: 'UsersIcon',
-    href: '/groups',
-    section: 'main',
-  },
-  {
-    id: 'nav-jobs',
-    label: '🇯🇵 အလုပ်အကိုင်',
-    icon: 'BriefcaseIcon',
-    href: '/jobs',
-    section: 'main',
-    roles: ['student', 'teacher', 'admin'],
-  },
-  {
-    id: 'nav-agency',
-    label: 'Agency — ဝန်ထမ်း ရှာရန်',
-    icon: 'BuildingOffice2Icon',
-    href: '/agency',
-    section: 'main',
-    roles: ['agency'],
-  },
-  {
-    id: 'nav-flashcards',
-    label: 'Flashcard',
-    shortLabel: 'Flashcard',
-    icon: 'RectangleStackIcon',
-    href: '/flashcards',
-    section: 'practice',
-    mobile: true,
-  },
-  {
-    id: 'nav-exam',
-    label: 'JLPT Mock Test',
-    shortLabel: 'Mock Test',
-    icon: 'DocumentTextIcon',
-    href: '/exam',
-    section: 'practice',
-    mobile: true,
-  },
-  {
-    id: 'nav-kanji',
-    label: 'Kanji လက်ရေး',
-    icon: 'PencilSquareIcon',
-    href: '/kanji',
-    section: 'practice',
-    mobile: !AI_ENABLED,
-  },
-  {
-    id: 'nav-speak',
-    label: 'အသံထွက် လေ့ကျင့်',
-    icon: 'SpeakerWaveIcon',
-    href: '/speak',
-    section: 'practice',
-  },
-  {
-    id: 'nav-sensei',
-    label: 'AI ဆရာ',
-    shortLabel: 'AI ဆရာ',
-    icon: 'SparklesIcon',
-    href: '/sensei',
-    section: 'ai',
-    mobile: true,
-  },
-  {
-    id: 'nav-interview',
-    label: 'အင်တာဗျူး လေ့ကျင့်',
-    icon: 'BriefcaseIcon',
-    href: '/interview',
-    section: 'ai',
-  },
-  {
-    id: 'nav-studio',
-    label: 'သင်ခန်းစာ Studio',
-    icon: 'PencilIcon',
-    href: '/studio',
-    section: 'account',
-    roles: ['teacher', 'admin'],
-  },
-  {
-    id: 'nav-messages',
-    label: 'Admin ထံ စာများ',
-    icon: 'ChatBubbleLeftRightIcon',
-    href: '/messages',
-    section: 'account',
-    roles: ['teacher', 'admin'],
-  },
-  {
-    id: 'nav-teach',
-    label: 'ဆရာ အဖြစ် ပါဝင်ရန်',
-    icon: 'AcademicCapIcon',
-    href: '/teach',
-    section: 'account',
-    roles: ['student'],
-  },
-  {
-    id: 'nav-classes',
-    label: '1-on-1 class',
-    icon: 'VideoCameraIcon',
-    href: '/classes',
-    section: 'account',
-  },
-  {
-    id: 'nav-rewards',
-    label: 'Premium အခမဲ့ ရယူရန်',
-    icon: 'GiftIcon',
-    href: '/rewards',
-    section: 'account',
-  },
-  {
-    id: 'nav-billing',
-    label: 'Premium / ငွေပေးချေ',
-    icon: 'CreditCardIcon',
-    href: '/billing',
-    section: 'account',
-  },
-  {
-    id: 'nav-profile',
-    label: 'ကိုယ်ရေးအချက်အလက်',
-    shortLabel: 'ကျွန်ုပ်',
-    icon: 'UserCircleIcon',
-    href: '/profile',
-    section: 'account',
-    mobile: true,
-  },
-  {
-    id: 'nav-admin',
+  admin: {
+    id: 'admin',
     label: 'Admin',
-    icon: 'Cog8ToothIcon',
-    href: '/admin',
-    section: 'account',
-    adminOnly: true,
+    emoji: '🛡',
+    home: '/admin',
+    tabs: [
+      { href: '/admin?tab=overview', label: 'အကျဉ်း', icon: 'ChartBarIcon' },
+      { href: '/admin?tab=payments', label: 'ငွေ', icon: 'BanknotesIcon' },
+      { href: '/admin?tab=teachers', label: 'ဆရာ', icon: 'AcademicCapIcon' },
+      { href: '/admin?tab=users', label: 'Users', icon: 'UsersIcon' },
+    ],
+    sections: [
+      {
+        label: 'စီမံရန်',
+        items: [
+          { href: '/admin?tab=overview', label: 'အကျဉ်းချုပ်', icon: 'ChartBarIcon' },
+          { href: '/admin?tab=payments', label: 'ငွေပေးချေမှု', icon: 'BanknotesIcon' },
+          { href: '/admin?tab=teachers', label: 'ဆရာများ', icon: 'AcademicCapIcon' },
+          { href: '/admin?tab=content', label: 'သင်ခန်းစာ စစ်ရန်', icon: 'BookOpenIcon' },
+          { href: '/admin?tab=bookings', label: '1-on-1 booking', icon: 'VideoCameraIcon' },
+          { href: '/admin?tab=agencies', label: 'Agency', icon: 'BuildingOffice2Icon' },
+          { href: '/messages', label: 'ဆရာတွေဆီက စာ', icon: 'ChatBubbleLeftRightIcon' },
+        ],
+      },
+      {
+        label: 'ငွေနဲ့ Users',
+        items: [
+          { href: '/admin?tab=users', label: 'Users', icon: 'UsersIcon' },
+          { href: '/admin?tab=revenue', label: 'ဝင်ငွေ', icon: 'CurrencyDollarIcon' },
+          { href: '/admin?tab=earnings', label: 'ဆရာ ဝင်ငွေ', icon: 'WalletIcon' },
+          { href: '/admin?tab=scholarships', label: 'ပညာသင်ဆု', icon: 'GiftIcon' },
+          { href: '/admin?tab=settings', label: 'Settings', icon: 'Cog6ToothIcon' },
+          { href: '/studio', label: 'သင်ခန်းစာ Studio', icon: 'PencilIcon' },
+        ],
+      },
+    ],
   },
-];
-
-// AI pages are hidden when no AI key is configured
-export const navItems = allNavItems.filter((i) => AI_ENABLED || i.section !== 'ai');
-
-export const sectionLabels: Record<NavItem['section'], string> = {
-  main: 'လေ့လာရန်',
-  practice: 'လေ့ကျင့်ရန်',
-  ai: 'AI',
-  account: 'အကောင့်',
 };
 
-export const pageTitles: Record<string, string> = Object.fromEntries(
-  allNavItems.map((i) => [i.href, i.label])
-);
+/** Modes a role can use, default first. */
+export function modesFor(role: string | undefined): Mode[] {
+  if (role === 'admin') return ['admin', 'teacher', 'student'];
+  if (role === 'teacher') return ['teacher', 'student'];
+  if (role === 'agency') return ['agency'];
+  return ['student'];
+}
+
+/** The mode a page belongs to, or null for pages shared by every mode (profile, billing…). */
+export function modeOfPath(path: string): Mode | null {
+  if (path.startsWith('/admin')) return 'admin';
+  if (path.startsWith('/agency')) return 'agency';
+  if (
+    path === '/teacher' ||
+    path.startsWith('/teacher/') ||
+    path.startsWith('/studio') ||
+    path.startsWith('/messages')
+  )
+    return 'teacher';
+  if (path === '/profile' || path === '/billing' || path.startsWith('/teachers')) return null;
+  return 'student';
+}
+
+/** Page titles by exact href (admin tabs include ?tab=) and by path (first item wins). */
+export const pageTitles: Record<string, string> = (() => {
+  const out: Record<string, string> = {};
+  for (const item of Object.values(MODES).flatMap((m) => m.sections.flatMap((s) => s.items))) {
+    out[item.href] ??= item.label;
+    out[item.href.split('?')[0]] ??= item.label;
+  }
+  return out;
+})();

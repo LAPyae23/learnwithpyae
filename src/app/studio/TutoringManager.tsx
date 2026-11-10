@@ -32,11 +32,11 @@ interface Booking {
 const field = 'h-9 px-3 rounded-lg border border-border bg-background text-[13.5px]';
 
 /** Teacher: 1-on-1 settings, open times and bookings. */
-export default function TutoringManager() {
+export default function TutoringManager({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const [s, setS] = useState<Settings | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [when, setWhen] = useState('');
   const [dur, setDur] = useState(60);
   const [links, setLinks] = useState<Record<string, string>>({});
