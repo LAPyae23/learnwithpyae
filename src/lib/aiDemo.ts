@@ -1,5 +1,10 @@
 import 'server-only';
-import { EXPLAIN_SYSTEM, INTERVIEW_SCORE_SYSTEM, INTERVIEW_SYSTEM } from './prompts';
+import {
+  EXPLAIN_SYSTEM,
+  INTERVIEW_SCORE_SYSTEM,
+  INTERVIEW_SYSTEM,
+  WRITING_SYSTEM,
+} from './prompts';
 import type { InterviewScore } from './interviewScore';
 
 /**
@@ -57,6 +62,21 @@ export function demoText(req: Req): string {
     return (
       DEMO_NOTE +
       '**ဘာလို့ မှားတာလဲ**\n\n- မေးခွန်းထဲက သဒ္ဒါ ပုံစံကို အရင် ရှာပါ။\n- ရွေးချယ်စရာ တစ်ခုချင်းစီကို ဝါကျထဲ ထည့်ဖတ်ကြည့်ပါ။\n- အဖြေမှန်က အဓိပ္ပာယ် ရော သဒ္ဒါ ရော ကိုက်ညီတဲ့ တစ်ခုတည်း ဖြစ်ပါတယ်။\n\nAI key ထည့်ပြီးရင် ဒီမေးခွန်းအတွက် သီးသန့် ရှင်းပြချက် ရပါမယ်။'
+    );
+  }
+
+  if (req.system === WRITING_SYSTEM) {
+    return (
+      DEMO_NOTE +
+      [
+        '**ပြင်ပြီး စာ**',
+        'I agree with you.',
+        '**အမှားများ**',
+        '- I am agree → I agree — "agree" က ကြိယာ ဖြစ်လို့ "am" မလိုပါ။',
+        '**ပိုသဘာဝကျတဲ့ ပုံစံ**',
+        'I totally agree with you.',
+        'AI key ထည့်ပြီးရင် ကိုယ်ရေးတဲ့ စာကို တကယ် စစ်ပေးပါမယ် 💪',
+      ].join('\n\n')
     );
   }
 

@@ -20,6 +20,13 @@ function loadUser() {
   return pending;
 }
 
+/** Updates the shared user object after a successful change (e.g. learning language). */
+export function patchCachedUser(patch: Partial<PublicUser>) {
+  pending?.then((u) => {
+    if (u) Object.assign(u, patch);
+  });
+}
+
 export function useCurrentUser() {
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);

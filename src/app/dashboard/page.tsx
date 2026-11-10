@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/AppLayout';
 import { useT } from '@/i18n/LocaleProvider';
+import { setLearningLang, useLearningLang } from '@/components/useLearningLang';
 import Icon from '@/components/ui/AppIcon';
 import { api } from '@/lib/api';
 import { youTubeId } from '@/lib/youtube';
@@ -44,33 +45,114 @@ const TOOLS: {
   icon: IconName;
   color: string;
   ai?: boolean;
-  jaOnly?: boolean;
+  /** Only while learning this language */
+  only?: LangCode;
 }[] = [
   {
     href: '/exam',
-    jaOnly: true,
+    only: 'ja',
     label: 'Mock Test',
     icon: 'DocumentTextIcon',
     color: 'bg-blue-50 text-blue-600',
   },
   {
     href: '/kanji',
-    jaOnly: true,
+    only: 'ja',
     label: 'Kanji',
     icon: 'PencilSquareIcon',
     color: 'bg-orange-50 text-orange-600',
   },
   {
     href: '/speak',
-    jaOnly: true,
+    only: 'ja',
     label: 'အသံထွက်',
     icon: 'SpeakerWaveIcon',
     color: 'bg-purple-50 text-purple-600',
   },
   {
     href: '/sensei',
-    jaOnly: true,
+    only: 'ja',
     label: 'AI ဆရာ',
+    icon: 'SparklesIcon',
+    color: 'bg-pink-50 text-pink-600',
+    ai: true,
+  },
+  {
+    href: '/korean',
+    only: 'ko',
+    label: '한글',
+    icon: 'LanguageIcon',
+    color: 'bg-blue-50 text-blue-600',
+  },
+  {
+    href: '/korean?t=words',
+    only: 'ko',
+    label: 'TOPIK စာလုံး',
+    icon: 'RectangleStackIcon',
+    color: 'bg-orange-50 text-orange-600',
+  },
+  {
+    href: '/korean?t=speak',
+    only: 'ko',
+    label: 'အသံထွက်',
+    icon: 'SpeakerWaveIcon',
+    color: 'bg-purple-50 text-purple-600',
+  },
+  {
+    href: '/korean?t=write',
+    only: 'ko',
+    label: 'AI စာစစ်',
+    icon: 'SparklesIcon',
+    color: 'bg-pink-50 text-pink-600',
+    ai: true,
+  },
+  {
+    href: '/chinese',
+    only: 'zh',
+    label: 'Tone ၄ မျိုး',
+    icon: 'MusicalNoteIcon',
+    color: 'bg-blue-50 text-blue-600',
+  },
+  {
+    href: '/chinese?t=hanzi',
+    only: 'zh',
+    label: 'HSK စာလုံး',
+    icon: 'RectangleStackIcon',
+    color: 'bg-orange-50 text-orange-600',
+  },
+  {
+    href: '/chinese?t=speak',
+    only: 'zh',
+    label: 'အသံထွက်',
+    icon: 'SpeakerWaveIcon',
+    color: 'bg-purple-50 text-purple-600',
+  },
+  {
+    href: '/chinese?t=write',
+    only: 'zh',
+    label: 'AI စာစစ်',
+    icon: 'SparklesIcon',
+    color: 'bg-pink-50 text-pink-600',
+    ai: true,
+  },
+  {
+    href: '/english',
+    only: 'en',
+    label: 'မှားလေ့ရှိတာ',
+    icon: 'ExclamationTriangleIcon',
+    color: 'bg-blue-50 text-blue-600',
+  },
+  {
+    href: '/english?t=speak',
+    only: 'en',
+    label: 'အသံထွက်',
+    icon: 'SpeakerWaveIcon',
+    color: 'bg-purple-50 text-purple-600',
+  },
+  {
+    href: '/english?t=write',
+    only: 'en',
+    label: 'AI စာစစ်',
     icon: 'SparklesIcon',
     color: 'bg-pink-50 text-pink-600',
     ai: true,
@@ -86,6 +168,25 @@ const TOOLS: {
   { href: '/rewards', label: 'ဆုများ', icon: 'GiftIcon', color: 'bg-amber-50 text-amber-600' },
 ];
 
+/** Where each non-Japanese learner starts: the skill that unlocks everything else. */
+const HUB: Record<Exclude<LangCode, 'ja'>, { href: string; title: string; sub: string }> = {
+  ko: {
+    href: '/korean',
+    title: '한글 — ဟန်ဂူလ် ဖတ်တတ်အောင် စမယ်',
+    sub: 'ဗျည်း ၁၄ လုံး၊ သရ ၁၀ လုံး — ၁ ရက်အတွင်း ဖတ်တတ်နိုင်ပါတယ်',
+  },
+  zh: {
+    href: '/chinese',
+    title: 'Tone ၄ မျိုး နားထောင်တတ်အောင် စမယ်',
+    sub: 'တရုတ် စကားရဲ့ အခက်ဆုံး အပိုင်း — ဒီကနေ စတာ အကောင်းဆုံးပါ',
+  },
+  en: {
+    href: '/english',
+    title: 'မြန်မာတွေ မှားလေ့ရှိတဲ့ English',
+    sub: '"I am agree", "open the light" — ဘာလို့ မှားလဲ သိအောင် လေ့ကျင့်မယ်',
+  },
+};
+
 /** Student home: what to do today, streak, quick tools, new lessons, my groups — all real data. */
 export default function StudentHome() {
   const tr = useT();
@@ -95,18 +196,10 @@ export default function StudentHome() {
   const [due, setDue] = useState<number | null>(null);
   const [lessons, setLessons] = useState<LessonItem[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [lang, setLang] = useState<LangCode>('ja');
-  useEffect(() => {
-    if (user?.learningLang && isLang(user.learningLang)) setLang(user.learningLang);
-  }, [user?.learningLang]);
+  const lang = useLearningLang();
 
-  async function chooseLang(v: LangCode) {
-    setLang(v);
-    await fetch('/api/auth/me', {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ learningLang: v }),
-    }).catch(() => toast.error('သိမ်းလို့ မရပါ'));
+  function chooseLang(v: LangCode) {
+    setLearningLang(v).catch(() => toast.error(tr('သိမ်းလို့ မရပါ')));
   }
 
   // Teachers, admins and agencies land on their own home unless they chose the student mode
@@ -171,19 +264,22 @@ export default function StudentHome() {
           <LangPicker value={lang} onChange={(v) => v !== 'all' && chooseLang(v)} size="sm" />
         </div>
 
-        {!ja && (
+        {!ja && HUB[lang as Exclude<LangCode, 'ja'>] && (
           <Link
-            href="/lesson"
-            className="block bg-gradient-to-br from-[#006633] to-emerald-500 text-white rounded-3xl p-5"
+            href={HUB[lang as Exclude<LangCode, 'ja'>].href}
+            className="block bg-gradient-to-br from-[#006633] to-emerald-500 text-white rounded-3xl p-5 active:scale-[0.99] transition-transform"
           >
             <p className="text-[13px] text-white/85">
-              {LANGUAGES[lang].flag} {LANGUAGES[lang].my} ({LANGUAGES[lang].exam})
+              {LANGUAGES[lang].flag} {tr(LANGUAGES[lang].my)} ({LANGUAGES[lang].exam})
             </p>
             <p className="text-[22px] font-bold leading-snug mt-1">
-              {tr('ဆရာတွေရဲ့ video သင်ခန်းစာနဲ့ လေ့လာမယ်')}
+              {tr(HUB[lang as Exclude<LangCode, 'ja'>].title)}
             </p>
-            <p className="mt-2 inline-flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-1.5 text-[13px] font-semibold">
-              {tr('သင်ခန်းစာ ကြည့်မယ်')} <Icon name="ArrowRightIcon" size={14} />
+            <p className="text-[13px] text-white/85 mt-1">
+              {tr(HUB[lang as Exclude<LangCode, 'ja'>].sub)}
+            </p>
+            <p className="mt-3 inline-flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-1.5 text-[13px] font-semibold">
+              {tr('စလေ့ကျင့်မယ်')} <Icon name="ArrowRightIcon" size={14} />
             </p>
           </Link>
         )}
@@ -204,7 +300,7 @@ export default function StudentHome() {
         {ja && <TodayPlanCard />}
 
         <div className="grid grid-cols-4 gap-2">
-          {TOOLS.filter((t) => (!t.ai || AI_ENABLED) && (ja || !t.jaOnly)).map((t) => (
+          {TOOLS.filter((t) => (!t.ai || AI_ENABLED) && (!t.only || t.only === lang)).map((t) => (
             <Link
               key={t.href}
               href={t.href}

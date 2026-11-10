@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { MODES, modeOfPath, modesFor, type Mode } from './navItems';
+import { forLanguage, MODES, modeOfPath, modesFor, type Mode } from './navItems';
+import { useLearningLang } from './useLearningLang';
 import { useCurrentUser } from './useCurrentUser';
 
 // Remembered per role, so a learner who just became a teacher starts in the teacher mode
@@ -29,6 +30,7 @@ export function lastMode(role?: string): Mode | null {
  */
 export function useMode() {
   const { user } = useCurrentUser();
+  const lang = useLearningLang();
   const pathname = usePathname() ?? '/';
   const search = useSearchParams();
   const allowed = modesFor(user?.role);
@@ -54,7 +56,7 @@ export function useMode() {
   const tab = search?.get('tab');
   const current = pathname === '/admin' ? `/admin?tab=${tab ?? 'overview'}` : pathname;
 
-  return { mode, config: MODES[mode], allowed, user, current };
+  return { mode, config: forLanguage(MODES[mode], lang), allowed, user, current };
 }
 
 /** Is `href` the active item for the current location? */

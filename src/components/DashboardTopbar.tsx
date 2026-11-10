@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 import { daysUntil, nextJlptDate } from '@/lib/jlpt';
 import { MODES, pageTitles } from './navItems';
 import { useMode } from './useMode';
+import { useLearningLang } from './useLearningLang';
 import { initial } from './useCurrentUser';
 import { useT } from '@/i18n/LocaleProvider';
 import LocaleToggle from '@/i18n/LocaleToggle';
@@ -21,6 +22,7 @@ interface Notice {
 /** Top bar: page title, exam countdown (students), real notifications, avatar. */
 export default function DashboardTopbar() {
   const { mode, user, current } = useMode();
+  const learning = useLearningLang();
   const tr = useT();
   const [open, setOpen] = useState(false);
   const [examDays, setExamDays] = useState<number | null>(null);
@@ -56,7 +58,7 @@ export default function DashboardTopbar() {
         <span className="hidden md:inline-flex">
           <LocaleToggle />
         </span>
-        {mode === 'student' && examDays !== null && (
+        {mode === 'student' && learning === 'ja' && examDays !== null && (
           <Link
             href="/plan"
             className="hidden sm:flex items-center gap-1.5 bg-warning-bg border border-amber-200 rounded-full px-3 py-1"

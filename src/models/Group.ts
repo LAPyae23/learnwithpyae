@@ -53,6 +53,8 @@ const dailyActivitySchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   day: { type: String, required: true }, // YYYY-MM-DD (Asia/Yangon)
   points: { type: Number, default: 0 },
+  // Points from the Korean / Chinese / English practice tools (capped per day)
+  practice: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 120 },
 });
 dailyActivitySchema.index({ user: 1, day: 1 }, { unique: true });

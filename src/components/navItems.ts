@@ -1,4 +1,5 @@
 import { AI_ENABLED } from '@/lib/features';
+import type { LangCode } from '@/data/languages';
 
 /**
  * Navigation is split into "modes", like switching between a personal profile and a page:
@@ -15,11 +16,15 @@ export interface NavItem {
   icon: string;
   /** Only for these roles (e.g. "become a teacher" only for students) */
   roles?: Role[];
+  /** Only while learning this language */
+  lang?: LangCode;
 }
 
 export interface NavSection {
   label: string;
   items: NavItem[];
+  /** Only while learning this language */
+  lang?: LangCode;
 }
 
 export interface ModeConfig {
@@ -44,7 +49,10 @@ export const MODES: Record<Mode, ModeConfig> = {
     tabs: [
       { href: '/dashboard', label: 'ပင်မ', icon: 'HomeIcon' },
       { href: '/lesson', label: 'သင်ခန်းစာ', icon: 'PlayCircleIcon' },
-      { href: '/flashcards', label: 'Flashcard', icon: 'RectangleStackIcon' },
+      { href: '/flashcards', label: 'Flashcard', icon: 'RectangleStackIcon', lang: 'ja' },
+      { href: '/korean', label: 'လေ့ကျင့်', icon: 'SparklesIcon', lang: 'ko' },
+      { href: '/chinese', label: 'လေ့ကျင့်', icon: 'SparklesIcon', lang: 'zh' },
+      { href: '/english', label: 'လေ့ကျင့်', icon: 'SparklesIcon', lang: 'en' },
       { href: '/groups', label: 'အုပ်စု', icon: 'UsersIcon' },
     ],
     sections: [
@@ -56,7 +64,37 @@ export const MODES: Record<Mode, ModeConfig> = {
         ],
       },
       {
+        label: '🇰🇷 ကိုရီးယား လေ့ကျင့်ရန်',
+        lang: 'ko',
+        items: [
+          { href: '/korean', label: '한글 ဟန်ဂူလ်', icon: 'LanguageIcon' },
+          { href: '/korean?t=words', label: 'TOPIK စာလုံး', icon: 'RectangleStackIcon' },
+          { href: '/korean?t=speak', label: 'အသံထွက် လေ့ကျင့်', icon: 'SpeakerWaveIcon' },
+          ...ai([{ href: '/korean?t=write', label: 'AI စာစစ်', icon: 'SparklesIcon' }]),
+        ],
+      },
+      {
+        label: '🇨🇳 တရုတ် လေ့ကျင့်ရန်',
+        lang: 'zh',
+        items: [
+          { href: '/chinese', label: 'Tone ၄ မျိုး', icon: 'MusicalNoteIcon' },
+          { href: '/chinese?t=hanzi', label: 'HSK စာလုံး', icon: 'RectangleStackIcon' },
+          { href: '/chinese?t=speak', label: 'အသံထွက် လေ့ကျင့်', icon: 'SpeakerWaveIcon' },
+          ...ai([{ href: '/chinese?t=write', label: 'AI စာစစ်', icon: 'SparklesIcon' }]),
+        ],
+      },
+      {
+        label: '🇬🇧 English လေ့ကျင့်ရန်',
+        lang: 'en',
+        items: [
+          { href: '/english', label: 'မှားလေ့ရှိတာများ', icon: 'ExclamationTriangleIcon' },
+          { href: '/english?t=speak', label: 'အသံထွက် လေ့ကျင့်', icon: 'SpeakerWaveIcon' },
+          ...ai([{ href: '/english?t=write', label: 'AI စာစစ်', icon: 'SparklesIcon' }]),
+        ],
+      },
+      {
         label: '🇯🇵 ဂျပန်စာ လေ့ကျင့်ရန်',
+        lang: 'ja',
         items: [
           { href: '/flashcards', label: 'Flashcard', icon: 'RectangleStackIcon' },
           { href: '/exam', label: 'JLPT Mock Test', icon: 'DocumentTextIcon' },
@@ -202,10 +240,20 @@ export function modeOfPath(path: string): Mode | null {
 
 /** Page titles by exact href (admin tabs include ?tab=) and by path (first item wins). */
 export const pageTitles: Record<string, string> = (() => {
-  const out: Record<string, string> = {};
+  const out: Record<string, string> = {
+    '/korean': '🇰🇷 ကိုရီးယား',
+    '/chinese': '🇨🇳 တရုတ်',
+    '/english': '🇬🇧 English',
+  };
   for (const item of Object.values(MODES).flatMap((m) => m.sections.flatMap((s) => s.items))) {
     out[item.href] ??= item.label;
     out[item.href.split('?')[0]] ??= item.label;
   }
   return out;
 })();
+
+/** A mode's menu with only the sections and tabs for the language being learned. */
+export function forLanguage(config: ModeConfig, lang: LangCode): ModeConfig {
+  const keep = (x: { lang?: LangCode }) => !x.lang || x.lang === lang;
+  return { ...config, tabs: config.tabs.filter(keep), sections: config.sections.filter(keep) };
+}
