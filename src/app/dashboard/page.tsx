@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/AppLayout';
+import { useT } from '@/i18n/LocaleProvider';
 import Icon from '@/components/ui/AppIcon';
 import { api } from '@/lib/api';
 import { youTubeId } from '@/lib/youtube';
@@ -87,6 +88,7 @@ const TOOLS: {
 
 /** Student home: what to do today, streak, quick tools, new lessons, my groups — all real data. */
 export default function StudentHome() {
+  const tr = useT();
   const router = useRouter();
   const { user } = useCurrentUser();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -145,7 +147,7 @@ export default function StudentHome() {
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[13px] text-muted-foreground">{hello} 👋</p>
+            <p className="text-[13px] text-muted-foreground">{tr(hello)} 👋</p>
             <h1 className="text-[20px] font-bold truncate">{user?.name ?? ''}</h1>
           </div>
           <Link
@@ -157,13 +159,15 @@ export default function StudentHome() {
               <span className="block text-[17px] font-bold leading-none tabular-nums">
                 {stats?.streak.current ?? 0}
               </span>
-              <span className="block text-[10px] text-amber-700">ရက်ဆက်</span>
+              <span className="block text-[10px] text-amber-700">{tr('ရက်ဆက်')}</span>
             </span>
           </Link>
         </div>
 
         <div>
-          <p className="text-[12px] font-semibold text-muted-foreground mb-1.5">ဘာ လေ့လာနေလဲ?</p>
+          <p className="text-[12px] font-semibold text-muted-foreground mb-1.5">
+            {tr('ဘာ လေ့လာနေလဲ?')}
+          </p>
           <LangPicker value={lang} onChange={(v) => v !== 'all' && chooseLang(v)} size="sm" />
         </div>
 
@@ -176,10 +180,10 @@ export default function StudentHome() {
               {LANGUAGES[lang].flag} {LANGUAGES[lang].my} ({LANGUAGES[lang].exam})
             </p>
             <p className="text-[22px] font-bold leading-snug mt-1">
-              ဆရာတွေရဲ့ video သင်ခန်းစာနဲ့ လေ့လာမယ်
+              {tr('ဆရာတွေရဲ့ video သင်ခန်းစာနဲ့ လေ့လာမယ်')}
             </p>
             <p className="mt-2 inline-flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-1.5 text-[13px] font-semibold">
-              သင်ခန်းစာ ကြည့်မယ် <Icon name="ArrowRightIcon" size={14} />
+              {tr('သင်ခန်းစာ ကြည့်မယ်')} <Icon name="ArrowRightIcon" size={14} />
             </p>
           </Link>
         )}
@@ -189,10 +193,10 @@ export default function StudentHome() {
             href="/flashcards"
             className="block bg-gradient-to-br from-[#006633] to-emerald-500 text-white rounded-3xl p-5 active:scale-[0.99] transition-transform"
           >
-            <p className="text-[13px] text-white/85">ဒီနေ့ ပြန်လှန်ရမယ့် ကတ်</p>
+            <p className="text-[13px] text-white/85">{tr('ဒီနေ့ ပြန်လှန်ရမယ့် ကတ်')}</p>
             <p className="text-[40px] font-bold leading-tight tabular-nums">{due ?? '…'}</p>
             <p className="mt-2 inline-flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-1.5 text-[13px] font-semibold">
-              {due ? 'စလေ့လာမယ်' : 'ကတ်အသစ် လေ့လာမယ်'} <Icon name="ArrowRightIcon" size={14} />
+              {tr(due ? 'စလေ့လာမယ်' : 'ကတ်အသစ် လေ့လာမယ်')} <Icon name="ArrowRightIcon" size={14} />
             </p>
           </Link>
         )}
@@ -209,7 +213,7 @@ export default function StudentHome() {
               <span className={`w-12 h-12 rounded-2xl flex items-center justify-center ${t.color}`}>
                 <Icon name={t.icon} size={24} />
               </span>
-              <span className="text-[11.5px] text-center leading-tight">{t.label}</span>
+              <span className="text-[11.5px] text-center leading-tight">{tr(t.label)}</span>
             </Link>
           ))}
         </div>
@@ -227,7 +231,7 @@ export default function StudentHome() {
                 <p className="text-[18px] font-bold tabular-nums">
                   {icon} {v}
                 </p>
-                <p className="text-[11px] text-muted-foreground">{l}</p>
+                <p className="text-[11px] text-muted-foreground">{tr(l)}</p>
               </div>
             ))}
           </div>
@@ -236,9 +240,9 @@ export default function StudentHome() {
         {lessons.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-bold text-[15px]">🆕 သင်ခန်းစာ အသစ်</h2>
+              <h2 className="font-bold text-[15px]">{tr('🆕 သင်ခန်းစာ အသစ်')}</h2>
               <Link href="/lesson" className="text-[12.5px] text-primary font-semibold">
-                အားလုံး →
+                {tr('အားလုံး →')}
               </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 snap-x">
@@ -286,14 +290,14 @@ export default function StudentHome() {
 
         <section className="bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-[15px]">👥 ကျွန်ုပ်၏ အုပ်စုများ</h2>
+            <h2 className="font-bold text-[15px]">{tr('👥 ကျွန်ုပ်၏ အုပ်စုများ')}</h2>
             <Link href="/groups" className="text-[12.5px] text-primary font-semibold">
-              {groups.length ? 'အားလုံး →' : 'အုပ်စု ရှာမယ် →'}
+              {tr(groups.length ? 'အားလုံး →' : 'အုပ်စု ရှာမယ် →')}
             </Link>
           </div>
           {groups.length === 0 ? (
             <p className="text-[13px] text-muted-foreground">
-              သူငယ်ချင်းတွေနဲ့ အတူ စာလုပ်ရင် ပိုပျော်ပြီး ပိုကြာကြာ ဆက်လုပ်နိုင်ပါတယ် 💪
+              {tr('သူငယ်ချင်းတွေနဲ့ အတူ စာလုပ်ရင် ပိုပျော်ပြီး ပိုကြာကြာ ဆက်လုပ်နိုင်ပါတယ် 💪')}
             </p>
           ) : (
             <div className="divide-y divide-border">
@@ -309,7 +313,7 @@ export default function StudentHome() {
                   <span className="flex-1 min-w-0">
                     <span className="block text-[14px] font-semibold truncate">{g.name}</span>
                     <span className="block text-[12px] text-muted-foreground">
-                      👥 {g.memberCount} ယောက်
+                      👥 {g.memberCount} {tr('ယောက်')}
                     </span>
                   </span>
                   <Icon name="ChevronRightIcon" size={16} className="text-muted-foreground" />

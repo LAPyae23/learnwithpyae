@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { useT } from '@/i18n/LocaleProvider';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import Icon from '@/components/ui/AppIcon';
@@ -51,6 +52,7 @@ const ACTIONS: { href: string; label: string; icon: IconName; color: string }[] 
 
 /** Teacher home: earnings, lesson stats, upcoming classes, quick actions. */
 export default function TeacherHome() {
+  const tr = useT();
   const { user } = useCurrentUser();
   const [lessons, setLessons] = useState<LessonItem[] | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -90,7 +92,7 @@ export default function TeacherHome() {
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[13px] text-muted-foreground">ဆရာ ပင်မ 👩‍🏫</p>
+            <p className="text-[13px] text-muted-foreground">{tr('ဆရာ ပင်မ 👩‍🏫')}</p>
             <h1 className="text-[20px] font-bold truncate">{user?.name ?? ''}</h1>
           </div>
           {user && (
@@ -98,7 +100,7 @@ export default function TeacherHome() {
               href={`/teachers/${user.id}`}
               className="flex-shrink-0 text-[12.5px] px-3 py-2 rounded-xl border border-border font-semibold"
             >
-              ကျွန်ုပ် Profile ကြည့်မယ်
+              {tr('ကျွန်ုပ် Profile ကြည့်မယ်')}
             </Link>
           )}
         </div>
@@ -119,7 +121,7 @@ export default function TeacherHome() {
               <p className="text-[17px] font-bold tabular-nums">
                 {icon} {v}
               </p>
-              <p className="text-[10.5px] text-muted-foreground">{l}</p>
+              <p className="text-[10.5px] text-muted-foreground">{tr(String(l))}</p>
             </div>
           ))}
         </div>
@@ -142,21 +144,21 @@ export default function TeacherHome() {
               <span className={`w-12 h-12 rounded-2xl flex items-center justify-center ${a.color}`}>
                 <Icon name={a.icon} size={24} />
               </span>
-              <span className="text-[11.5px] text-center leading-tight">{a.label}</span>
+              <span className="text-[11.5px] text-center leading-tight">{tr(a.label)}</span>
             </Link>
           ))}
         </div>
 
         <section className="bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-[15px]">📅 လာမယ့် 1-on-1 class</h2>
+            <h2 className="font-bold text-[15px]">{tr('📅 လာမယ့် 1-on-1 class')}</h2>
             <Link href="/teacher/classes" className="text-[12.5px] text-primary font-semibold">
-              စီမံမယ် →
+              {tr('စီမံမယ် →')}
             </Link>
           </div>
           {upcoming.length === 0 ? (
             <p className="text-[13px] text-muted-foreground">
-              မရှိသေးပါ — အားတဲ့ အချိန်တွေ ဖွင့်ထားရင် ကျောင်းသားတွေ book လာပါမယ်
+              {tr('မရှိသေးပါ — အားတဲ့ အချိန်တွေ ဖွင့်ထားရင် ကျောင်းသားတွေ book လာပါမယ်')}
             </p>
           ) : (
             <div className="divide-y divide-border">
@@ -173,7 +175,7 @@ export default function TeacherHome() {
                       href="/teacher/classes"
                       className="text-[11.5px] px-2 py-1 rounded-full bg-warning-bg text-warning font-semibold"
                     >
-                      Link ထည့်ရန်
+                      {tr('Link ထည့်ရန်')}
                     </Link>
                   ) : (
                     <span
@@ -190,7 +192,7 @@ export default function TeacherHome() {
 
         <section className="bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-bold text-[15px]">🔥 လူကြည့်အများဆုံး သင်ခန်းစာ</h2>
+            <h2 className="font-bold text-[15px]">{tr('🔥 လူကြည့်အများဆုံး သင်ခန်းစာ')}</h2>
             <Link href="/studio" className="text-[12.5px] text-primary font-semibold">
               Studio →
             </Link>

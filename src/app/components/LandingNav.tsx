@@ -3,10 +3,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
 import Icon from '@/components/ui/AppIcon';
+import { useT } from '@/i18n/LocaleProvider';
+import LocaleToggle from '@/i18n/LocaleToggle';
 
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const tr = useT();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -49,13 +52,14 @@ export default function LandingNav() {
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
-                {link?.label}
+                {tr(link.label)}
               </a>
             ))}
           </div>
 
           {/* CTA */}
           <div className="hidden lg:flex items-center gap-3">
+            <LocaleToggle dark={!scrolled} />
             <Link
               href="/login"
               className={`whitespace-nowrap text-[14px] font-semibold px-4 py-2 rounded-lg transition-colors ${
@@ -64,28 +68,31 @@ export default function LandingNav() {
                   : 'text-white/90 hover:text-white hover:bg-white/10'
               }`}
             >
-              အကောင့်ဝင်ရန်
+              {tr('အကောင့်ဝင်ရန်')}
             </Link>
             <Link
               href="/login"
               className="whitespace-nowrap bg-white text-primary text-[14px] font-bold px-5 py-2 rounded-lg hover:bg-secondary transition-colors shadow-sm"
             >
-              အခမဲ့ စလေ့လာမယ်
+              {tr('အခမဲ့ စလေ့လာမယ်')}
             </Link>
           </div>
 
           {/* Mobile hamburger */}
-          <button
-            className="lg:hidden p-2 rounded-lg"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="မီနူး ဖွင့်/ပိတ်"
-          >
-            <Icon
-              name={mobileOpen ? 'XMarkIcon' : 'Bars3Icon'}
-              size={22}
-              className={scrolled ? 'text-foreground' : 'text-white'}
-            />
-          </button>
+          <div className="lg:hidden flex items-center gap-2">
+            <LocaleToggle dark={!scrolled} />
+            <button
+              className="lg:hidden p-2 rounded-lg"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="မီနူး ဖွင့်/ပိတ်"
+            >
+              <Icon
+                name={mobileOpen ? 'XMarkIcon' : 'Bars3Icon'}
+                size={22}
+                className={scrolled ? 'text-foreground' : 'text-white'}
+              />
+            </button>
+          </div>
         </div>
       </nav>
       {/* Mobile drawer */}
@@ -101,7 +108,7 @@ export default function LandingNav() {
                   onClick={() => setMobileOpen(false)}
                   className="px-4 py-3 rounded-lg text-[15px] font-medium text-foreground hover:bg-muted transition-colors"
                 >
-                  {link?.label}
+                  {tr(link.label)}
                 </a>
               ))}
               <div className="pt-3 border-t border-border mt-2 flex flex-col gap-2">
@@ -109,13 +116,13 @@ export default function LandingNav() {
                   href="/login"
                   className="text-center px-4 py-2.5 rounded-lg border border-primary text-primary font-semibold text-[14px]"
                 >
-                  အကောင့်ဝင်ရန်
+                  {tr('အကောင့်ဝင်ရန်')}
                 </Link>
                 <Link
                   href="/login"
                   className="text-center px-4 py-2.5 rounded-lg bg-primary text-white font-bold text-[14px]"
                 >
-                  အခမဲ့ စလေ့လာမယ်
+                  {tr('အခမဲ့ စလေ့လာမယ်')}
                 </Link>
               </div>
             </div>

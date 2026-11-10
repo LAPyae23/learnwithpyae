@@ -1,3 +1,5 @@
+import { LocaleProvider } from '@/i18n/LocaleProvider';
+import { getLocale } from '@/i18n/server';
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans, Noto_Sans_Myanmar, Noto_Sans_JP } from 'next/font/google';
@@ -34,25 +36,32 @@ export const viewport: Viewport = {
   themeColor: '#006633',
 };
 
-export const metadata: Metadata = {
-  title: 'NihongoAcademy — မြန်မာလို ရှင်းပြတဲ့ ဂျပန်စာ JLPT သင်တန်း',
-  description:
-    'JLPT N5 မှ N3 အထိ ဂျပန်စာကို မြန်မာလို ရှင်းလင်းချက်၊ flashcard၊ mock test တွေနဲ့ ဖုန်းကနေ လေ့လာပါ။',
-  appleWebApp: { capable: true, title: 'NihongoAcademy', statusBarStyle: 'default' },
-  icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const en = (await getLocale()) === 'en';
+  return {
+    title: en
+      ? 'NihongoAcademy — Japanese, Chinese, Korean & English, explained in Burmese'
+      : 'NihongoAcademy — မြန်မာလို ရှင်းပြတဲ့ ဂျပန်၊ တရုတ်၊ ကိုရီးယား၊ English သင်တန်း',
+    description: en
+      ? 'Video lessons, flashcards, mock tests, study groups and 1-on-1 classes — learn languages on your phone, explained in Burmese.'
+      : 'ဂျပန်၊ တရုတ်၊ ကိုရီးယား၊ English ကို video သင်ခန်းစာ၊ flashcard၊ mock test၊ စာလုပ်ဖော် အုပ်စုနဲ့ ဆရာ/ဆရာမတွေနဲ့ ဖုန်းကနေ မြန်မာလို လေ့လာပါ။',
+    appleWebApp: { capable: true, title: 'NihongoAcademy', statusBarStyle: 'default' },
+    icons: {
+      icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
+    },
+  };
+}
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
     <html
-      lang="my"
+      lang={locale}
       className={`${plusJakartaSans.variable} ${notoMyanmar.variable} ${notoJP.variable}`}
     >
       <body>
         <PwaRegister />
-        {children}
+        <LocaleProvider initial={locale}>{children}</LocaleProvider>
         <Toaster
           position="bottom-right"
           toastOptions={{

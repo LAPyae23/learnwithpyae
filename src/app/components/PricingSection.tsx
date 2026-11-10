@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Icon from '@/components/ui/AppIcon';
+import { useT } from '@/i18n/LocaleProvider';
 import { DEFAULT_SETTINGS, PLAN_IDS, formatKs, type SiteSettingsData } from '@/data/payment';
 
 const FREE_FOREVER = [
@@ -38,6 +39,7 @@ const EARN = [
 ];
 
 export default function PricingSection() {
+  const tr = useT();
   const [s, setS] = useState<SiteSettingsData>({ ...DEFAULT_SETTINGS, accounts: [] });
   useEffect(() => {
     fetch('/api/settings')
@@ -55,24 +57,27 @@ export default function PricingSection() {
           <div className="inline-flex items-center gap-2 bg-secondary border border-green-200 rounded-full px-4 py-1.5 mb-4">
             <Icon name="HeartIcon" size={14} className="text-primary" />
             <span className="text-primary text-[13px] font-semibold">
-              လေ့လာခြင်းက လူတိုင်းအတွက်
+              {tr('လေ့လာခြင်းက လူတိုင်းအတွက်')}
             </span>
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-3">
-            လေ့လာတာ အမြဲ အခမဲ့ — Premium က ပံ့ပိုးမှု
+            {tr('လေ့လာတာ အမြဲ အခမဲ့ — Premium က ပံ့ပိုးမှု')}
           </h2>
           <p className="text-muted-foreground text-[16px] max-w-2xl mx-auto">
-            ပိုက်ဆံ မရှိလို့ ဘယ်သူမှ ဂျပန်စာ မလေ့လာရဘဲ မဖြစ်စေရပါ။ အဓိက feature အားလုံး အခမဲ့ပါ။
-            Premium ဝယ်သူတွေက ဆရာတွေနဲ့ ပိုက်ဆံ မတတ်နိုင်တဲ့ ကျောင်းသားတွေကို ကူညီရာ ရောက်ပါတယ်။
+            {tr(
+              'ပိုက်ဆံ မရှိလို့ ဘယ်သူမှ ဘာသာစကား မလေ့လာရဘဲ မဖြစ်စေရပါ။ အဓိက feature အားလုံး အခမဲ့ပါ။ Premium ဝယ်သူတွေက ဆရာတွေနဲ့ ပိုက်ဆံ မတတ်နိုင်တဲ့ ကျောင်းသားတွေကို ကူညီရာ ရောက်ပါတယ်။'
+            )}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {/* Free */}
           <div className="rounded-2xl bg-card border border-border p-6 flex flex-col shadow-card">
-            <p className="font-bold text-[18px]">🆓 အခမဲ့ — အမြဲတမ်း</p>
+            <p className="font-bold text-[18px]">{tr('🆓 အခမဲ့ — အမြဲတမ်း')}</p>
             <p className="text-4xl font-bold mt-2">0 Ks</p>
-            <p className="text-[13px] text-muted-foreground mt-1">ကန့်သတ်ချိန် မရှိ၊ card မလို</p>
+            <p className="text-[13px] text-muted-foreground mt-1">
+              {tr('ကန့်သတ်ချိန် မရှိ၊ card မလို')}
+            </p>
             <ul className="space-y-2.5 mt-5 flex-1">
               {FREE_FOREVER.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-[13.5px]">
@@ -82,7 +87,7 @@ export default function PricingSection() {
                     variant="solid"
                     className="text-primary mt-0.5 flex-shrink-0"
                   />
-                  {f}
+                  {tr(f)}
                 </li>
               ))}
             </ul>
@@ -90,7 +95,7 @@ export default function PricingSection() {
               href="/login"
               className="mt-6 block text-center py-3 rounded-xl bg-primary text-white font-bold text-[14px] hover:bg-accent"
             >
-              အခမဲ့ စလေ့လာမယ်
+              {tr('အခမဲ့ စလေ့လာမယ်')}
             </Link>
           </div>
 
@@ -113,7 +118,7 @@ export default function PricingSection() {
             <ul className="space-y-2.5 mt-5 flex-1">
               {SUPPORTER.map((f) => (
                 <li key={f} className="text-[13.5px] text-white/95">
-                  {f}
+                  {tr(f)}
                 </li>
               ))}
             </ul>
@@ -121,7 +126,7 @@ export default function PricingSection() {
               href="/billing"
               className="mt-6 block text-center py-3 rounded-xl bg-white text-primary font-bold text-[14px] hover:bg-green-50"
             >
-              Premium နဲ့ ပံ့ပိုးမယ်
+              {tr('Premium နဲ့ ပံ့ပိုးမယ်')}
             </Link>
           </div>
         </div>
@@ -129,10 +134,10 @@ export default function PricingSection() {
         {/* Earn premium */}
         <div className="max-w-5xl mx-auto mt-12">
           <h3 className="text-center text-[20px] font-bold mb-1">
-            💪 ကြိုးစားမှုနဲ့ Premium အခမဲ့ ရယူပါ
+            {tr('💪 ကြိုးစားမှုနဲ့ Premium အခမဲ့ ရယူပါ')}
           </h3>
           <p className="text-center text-[14px] text-muted-foreground mb-5">
-            ပိုက်ဆံ ရှိသူက ပိုက်ဆံနဲ့၊ မရှိသူက ကြိုးစားမှုနဲ့ — ဘယ်သူမှ ဘေးမကျန်ခဲ့ပါဘူး
+            {tr('ပိုက်ဆံ ရှိသူက ပိုက်ဆံနဲ့၊ မရှိသူက ကြိုးစားမှုနဲ့ — ဘယ်သူမှ ဘေးမကျန်ခဲ့ပါဘူး')}
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {EARN.map((e) => (
@@ -141,15 +146,15 @@ export default function PricingSection() {
                 className="bg-card border border-border rounded-2xl p-4 text-center"
               >
                 <p className="text-3xl">{e.icon}</p>
-                <p className="font-bold text-[14px] mt-2">{e.title}</p>
-                <p className="text-[12.5px] text-muted-foreground mt-1">{e.desc}</p>
+                <p className="font-bold text-[14px] mt-2">{tr(e.title)}</p>
+                <p className="text-[12.5px] text-muted-foreground mt-1">{tr(e.desc)}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-3">
-          <p className="text-[13px] text-muted-foreground">ပေးချေနိုင်သော နည်းလမ်းများ</p>
+          <p className="text-[13px] text-muted-foreground">{tr('ပေးချေနိုင်သော နည်းလမ်းများ')}</p>
           <div className="flex flex-wrap justify-center gap-2">
             {methods.map((m) => (
               <span

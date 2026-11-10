@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Icon from '@/components/ui/AppIcon';
 import { daysUntil, jlptSessionLabel, nextJlptDate } from '@/lib/jlpt';
+import { useT } from '@/i18n/LocaleProvider';
 
 const stats = [
-  { id: 'stat-levels', value: 'N5–N3', label: 'JLPT အဆင့်များ' },
+  { id: 'stat-levels', value: '🇯🇵🇨🇳🇰🇷🇬🇧', label: 'ဘာသာစကား' },
   { id: 'stat-burmese', value: '100%', label: 'မြန်မာလို ရှင်းလင်းချက်' },
   { id: 'stat-mobile', value: '📱', label: 'ဖုန်းနဲ့ အလွယ်တကူ' },
   { id: 'stat-free', value: 'အခမဲ့', label: 'အဓိက feature အားလုံး' },
@@ -14,6 +15,7 @@ const stats = [
 export default function HeroSection() {
   const [daysUntilExam, setDaysUntilExam] = useState<number | null>(null);
   const [examLabel, setExamLabel] = useState('');
+  const tr = useT();
 
   useEffect(() => {
     const nextExam = nextJlptDate();
@@ -39,20 +41,21 @@ export default function HeroSection() {
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-white/90 text-[13px] font-medium">
-              မြန်မာလို ရှင်းပြတဲ့ ဂျပန်စာ သင်တန်း
+              {tr('မြန်မာလို ရှင်းပြတဲ့ ဘာသာစကား သင်တန်း')}
             </span>
           </div>
 
           {/* Headline */}
           <h1 className="text-hero-xl text-white mb-5 leading-tight">
-            JLPT ကို <span className="text-green-300">မြန်မာလို</span> နားလည်လွယ်အောင် လေ့လာပြီး
-            အောင်မြင်ပါ
+            {tr('ဂျပန်၊ တရုတ်၊ ကိုရီးယား၊ English ကို')}{' '}
+            <span className="text-green-300">{tr('မြန်မာလို')}</span>{' '}
+            {tr('နားလည်လွယ်အောင် လေ့လာပါ')}
           </h1>
 
           <p className="text-hero-sub text-white/80 mb-8 max-w-xl">
-            Video သင်ခန်းစာ၊ flashcard၊ မြန်မာလို သဒ္ဒါရှင်းလင်းချက်နဲ့ JLPT mock test တွေကို
-            ဖုန်းကနေ နေ့စဉ် ၃၀ မိနစ်စီ လေ့လာနိုင်ပါတယ်။ ဂျပန်မှာ အလုပ်လုပ်ဖို့၊ ပညာသင်ဖို့
-            ပြင်ဆင်နေသူတွေအတွက်ပါ။
+            {tr(
+              'Video သင်ခန်းစာ၊ flashcard၊ mock test၊ စာလုပ်ဖော် အုပ်စုနဲ့ ဆရာ/ဆရာမတွေနဲ့ တစ်ယောက်ချင်း class — ဖုန်းကနေ နေ့စဉ် ၃၀ မိနစ်စီ လေ့လာနိုင်ပါတယ်။ ဂျပန်၊ ကိုရီးယား၊ တရုတ်မှာ အလုပ်လုပ်ဖို့၊ ပညာသင်ဖို့ ပြင်ဆင်နေသူတွေအတွက်ပါ။'
+            )}
           </p>
 
           {/* CTAs */}
@@ -62,14 +65,14 @@ export default function HeroSection() {
               className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold text-[15px] px-7 py-3.5 rounded-xl hover:bg-green-50 transition-all duration-150 active:scale-95 shadow-lg"
             >
               <Icon name="AcademicCapIcon" size={18} />
-              အခမဲ့ စတင်လေ့လာမယ်
+              {tr('အခမဲ့ စတင်လေ့လာမယ်')}
             </Link>
             <a
               href="#courses"
               className="inline-flex items-center justify-center gap-2 bg-white/10 border border-white/30 text-white font-semibold text-[15px] px-7 py-3.5 rounded-xl hover:bg-white/20 transition-all duration-150 active:scale-95"
             >
               <Icon name="PlayCircleIcon" size={18} />
-              သင်တန်းများ ကြည့်မယ်
+              {tr('သင်တန်းများ ကြည့်မယ်')}
             </a>
           </div>
 
@@ -79,13 +82,15 @@ export default function HeroSection() {
               <p className="text-white font-bold text-2xl tabular-nums leading-none">
                 {daysUntilExam ?? '—'}
               </p>
-              <p className="text-white/60 text-[11px] mt-0.5">ရက်</p>
+              <p className="text-white/60 text-[11px] mt-0.5">{tr('ရက်')}</p>
             </div>
             <div className="w-px h-8 bg-white/20" />
             <div>
-              <p className="text-white font-semibold text-[13px]">{examLabel} JLPT စာမေးပွဲအထိ</p>
+              <p className="text-white font-semibold text-[13px]">
+                {examLabel} {tr('JLPT စာမေးပွဲအထိ')}
+              </p>
               <p className="text-white/60 text-[12px]">
-                ဇူလိုင်နဲ့ ဒီဇင်ဘာ ပထမ တနင်္ဂနွေနေ့တွင် ကျင်းပပါတယ်
+                {tr('ဇူလိုင်နဲ့ ဒီဇင်ဘာ ပထမ တနင်္ဂနွေနေ့တွင် ကျင်းပပါတယ်')}
               </p>
             </div>
             <Icon name="CalendarDaysIcon" size={20} className="text-white/60 ml-2" />
@@ -98,8 +103,8 @@ export default function HeroSection() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats?.map((stat) => (
               <div key={stat?.id} className="text-center">
-                <p className="text-white font-bold text-2xl tabular-nums">{stat?.value}</p>
-                <p className="text-white/60 text-[13px] mt-0.5">{stat?.label}</p>
+                <p className="text-white font-bold text-2xl tabular-nums">{tr(stat.value)}</p>
+                <p className="text-white/60 text-[13px] mt-0.5">{tr(stat.label)}</p>
               </div>
             ))}
           </div>

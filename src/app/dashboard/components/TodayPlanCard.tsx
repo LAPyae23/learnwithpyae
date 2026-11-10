@@ -1,11 +1,13 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
+import { useT } from '@/i18n/LocaleProvider';
 import { STATUS_LABELS, TASK_LABELS, usePlan } from '@/components/usePlan';
 
 /** Dashboard card: today's tasks from the study planner + pass estimate. */
 export default function TodayPlanCard() {
   const { data } = usePlan();
+  const tr = useT();
   if (!data) return <div className="h-28 bg-muted rounded-2xl animate-pulse" />;
   const { plan } = data;
   const today = plan.week[0];
@@ -15,17 +17,18 @@ export default function TodayPlanCard() {
     <div className="bg-card border border-border rounded-2xl p-4">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div>
-          <h3 className="font-bold text-[15px] text-foreground">ဒီနေ့ လုပ်ရမယ့်အရာ</h3>
+          <h3 className="font-bold text-[15px] text-foreground">{tr('ဒီနေ့ လုပ်ရမယ့်အရာ')}</h3>
           <p className="text-[12px] text-muted-foreground">
-            ~{today?.minutes ?? 0} မိနစ် · JLPT {data.settings.level} အထိ {plan.daysLeft} ရက်
+            ~{today?.minutes ?? 0} {tr('မိနစ်')} · JLPT {data.settings.level} {tr('အထိ')}{' '}
+            {plan.daysLeft} {tr('ရက်')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${status.cls}`}>
-            {status.text}
+            {tr(status.text)}
           </span>
           <span className="text-[12px] font-bold text-foreground">
-            အောင်နိုင်ခြေ {plan.passChance}%
+            {tr('အောင်နိုင်ခြေ')} {plan.passChance}%
           </span>
         </div>
       </div>
@@ -39,7 +42,7 @@ export default function TodayPlanCard() {
               className="flex items-center gap-1.5 text-[13px] font-medium bg-secondary/60 hover:bg-secondary border border-primary/20 rounded-xl px-3 py-2"
             >
               <span>{meta.icon}</span>
-              {meta.label}
+              {tr(meta.label)}
               {t.count > 1 || t.kind === 'review' ? (
                 <span className="font-bold text-primary">{t.count}</span>
               ) : null}
@@ -50,7 +53,7 @@ export default function TodayPlanCard() {
           href="/plan"
           className="text-[13px] text-primary font-semibold px-2 py-2 hover:underline"
         >
-          အစီအစဉ် အပြည့် →
+          {tr('အစီအစဉ် အပြည့် →')}
         </Link>
       </div>
     </div>

@@ -6,11 +6,13 @@ import Icon from '@/components/ui/AppIcon';
 import ModeSwitcher from './ModeSwitcher';
 import { isActive, useMode } from './useMode';
 import { logout } from './useCurrentUser';
+import { useT } from '@/i18n/LocaleProvider';
 
 /** Desktop sidebar: only the current mode's menu, with a mode switcher on top. */
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { mode, config, allowed, user, current } = useMode();
+  const tr = useT();
 
   return (
     <aside
@@ -45,7 +47,7 @@ export default function Sidebar() {
             <div key={section.label} className="mb-1">
               {!collapsed && (
                 <p className="px-4 pt-3 pb-1 text-[11.5px] font-semibold text-muted-foreground">
-                  {section.label}
+                  {tr(section.label)}
                 </p>
               )}
               {items.map((item) => {
@@ -54,7 +56,7 @@ export default function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    title={collapsed ? item.label : undefined}
+                    title={collapsed ? tr(item.label) : undefined}
                     className={`flex items-center mx-2 rounded-lg text-[13.5px] font-medium transition-all duration-150 group ${
                       collapsed ? 'justify-center py-2.5' : 'gap-2.5 px-3 py-2'
                     } ${
@@ -73,7 +75,9 @@ export default function Sidebar() {
                           : 'text-muted-foreground group-hover:text-foreground'
                       }
                     />
-                    {!collapsed && <span className="whitespace-nowrap flex-1">{item.label}</span>}
+                    {!collapsed && (
+                      <span className="whitespace-nowrap flex-1">{tr(item.label)}</span>
+                    )}
                   </Link>
                 );
               })}
@@ -89,7 +93,7 @@ export default function Sidebar() {
           title="အကောင့်မှ ထွက်ရန်"
         >
           <Icon name="ArrowRightOnRectangleIcon" size={16} />
-          {!collapsed && <span>အကောင့်မှ ထွက်ရန်</span>}
+          {!collapsed && <span>{tr('အကောင့်မှ ထွက်ရန်')}</span>}
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -97,7 +101,7 @@ export default function Sidebar() {
           title={collapsed ? 'ချဲ့ရန်' : 'ချုံ့ရန်'}
         >
           <Icon name={collapsed ? 'ChevronDoubleRightIcon' : 'ChevronDoubleLeftIcon'} size={16} />
-          {!collapsed && <span>ချုံ့ရန်</span>}
+          {!collapsed && <span>{tr('ချုံ့ရန်')}</span>}
         </button>
       </div>
     </aside>

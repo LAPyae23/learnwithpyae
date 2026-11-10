@@ -8,6 +8,8 @@ import { daysUntil, nextJlptDate } from '@/lib/jlpt';
 import { MODES, pageTitles } from './navItems';
 import { useMode } from './useMode';
 import { initial } from './useCurrentUser';
+import { useT } from '@/i18n/LocaleProvider';
+import LocaleToggle from '@/i18n/LocaleToggle';
 
 interface Notice {
   id: string;
@@ -19,6 +21,7 @@ interface Notice {
 /** Top bar: page title, exam countdown (students), real notifications, avatar. */
 export default function DashboardTopbar() {
   const { mode, user, current } = useMode();
+  const tr = useT();
   const [open, setOpen] = useState(false);
   const [examDays, setExamDays] = useState<number | null>(null);
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -31,7 +34,7 @@ export default function DashboardTopbar() {
       .catch(() => setNotices([]));
   }, [user, mode, current]);
 
-  const title = pageTitles[current] ?? pageTitles[current.split('?')[0]] ?? MODES[mode].label;
+  const title = tr(pageTitles[current] ?? pageTitles[current.split('?')[0]] ?? MODES[mode].label);
 
   return (
     <header className="h-14 md:h-16 bg-card border-b border-border flex items-center justify-between gap-2 px-4 md:px-6 flex-shrink-0 z-20">
@@ -44,19 +47,24 @@ export default function DashboardTopbar() {
         </span>
         {mode !== 'student' && (
           <span className="flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-primary">
-            {MODES[mode].emoji} {MODES[mode].label}
+            {MODES[mode].emoji} {tr(MODES[mode].label)}
           </span>
         )}
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
+        <span className="hidden md:inline-flex">
+          <LocaleToggle />
+        </span>
         {mode === 'student' && examDays !== null && (
           <Link
             href="/plan"
             className="hidden sm:flex items-center gap-1.5 bg-warning-bg border border-amber-200 rounded-full px-3 py-1"
           >
             <Icon name="CalendarDaysIcon" size={13} className="text-warning" />
-            <span className="text-[12px] font-semibold text-warning">JLPT {examDays} ရက်အလို</span>
+            <span className="text-[12px] font-semibold text-warning">
+              JLPT {examDays} {tr('ရက်အလို')}
+            </span>
           </Link>
         )}
 
@@ -82,11 +90,11 @@ export default function DashboardTopbar() {
               />
               <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-80 bg-card border border-border rounded-2xl shadow-modal z-50 overflow-hidden">
                 <p className="px-4 py-3 border-b border-border font-semibold text-[14px]">
-                  အသိပေးချက်များ
+                  {tr('အသိပေးချက်များ')}
                 </p>
                 {notices.length === 0 ? (
                   <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
-                    အသစ် မရှိပါ 🎉
+                    {tr('အသစ် မရှိပါ 🎉')}
                   </p>
                 ) : (
                   <div className="max-h-80 overflow-y-auto divide-y divide-border">

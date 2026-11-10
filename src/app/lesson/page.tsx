@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useT } from '@/i18n/LocaleProvider';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { api } from '@/lib/api';
@@ -57,7 +58,7 @@ function LessonCard({ l }: { l: LessonItem }) {
         </span>
         {l.durationMin > 0 && (
           <span className="absolute bottom-2 right-2 text-[11px] px-1.5 py-0.5 rounded bg-black/75 text-white">
-            {l.durationMin} မိနစ်
+            {l.durationMin} min
           </span>
         )}
         {yt && (
@@ -91,6 +92,7 @@ function LessonCard({ l }: { l: LessonItem }) {
 }
 
 export default function LessonListPage() {
+  const tr = useT();
   const { user } = useCurrentUser();
   const [feed, setFeed] = useState<Feed>('all');
   const [lessons, setLessons] = useState<LessonItem[] | null>(null);
@@ -131,10 +133,11 @@ export default function LessonListPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">သင်ခန်းစာများ</h1>
+            <h1 className="text-2xl font-bold text-foreground">{tr('သင်ခန်းစာများ')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              ဂျပန်၊ တရုတ်၊ ကိုရီးယား၊ English — ဆရာ/ဆရာမတွေ မြန်မာလို ရှင်းပြထားတဲ့ video
-              သင်ခန်းစာတွေ
+              {tr(
+                'ဂျပန်၊ တရုတ်၊ ကိုရီးယား၊ English — ဆရာ/ဆရာမတွေ မြန်မာလို ရှင်းပြထားတဲ့ video သင်ခန်းစာတွေ'
+              )}
             </p>
           </div>
           <div className="flex gap-2">
@@ -142,14 +145,14 @@ export default function LessonListPage() {
               href="/teachers"
               className="px-4 py-2 rounded-xl border border-border text-sm font-semibold hover:bg-muted"
             >
-              👩‍🏫 ဆရာများ
+              {tr('👩‍🏫 ဆရာများ')}
             </Link>
             {canTeach && (
               <Link
                 href="/studio"
                 className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold"
               >
-                ✏️ သင်ခန်းစာ တင်မယ်
+                ✏️ {tr('သင်ခန်းစာ တင်မယ်')}
               </Link>
             )}
           </div>
@@ -168,7 +171,7 @@ export default function LessonListPage() {
                 feed === f.id ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
               }`}
             >
-              {f.label}
+              {tr(f.label)}
             </button>
           ))}
         </div>
@@ -184,7 +187,7 @@ export default function LessonListPage() {
                   : 'border-border text-muted-foreground'
               }`}
             >
-              {l === 'all' ? 'အဆင့် အားလုံး' : l}
+              {l === 'all' ? tr('အဆင့် အားလုံး') : l}
             </button>
           ))}
         </div>
@@ -201,20 +204,22 @@ export default function LessonListPage() {
           <div className="bg-card border border-border rounded-2xl p-8 text-center text-sm text-muted-foreground">
             {feed === 'following' ? (
               <>
-                Follow ထားတဲ့ ဆရာ မရှိသေးပါ။
+                {tr('Follow ထားတဲ့ ဆရာ မရှိသေးပါ။')}
                 <Link href="/teachers" className="block mt-2 text-primary font-semibold">
-                  ဆရာတွေကို ရှာကြည့်မယ် →
+                  {tr('ဆရာတွေကို ရှာကြည့်မယ် →')}
                 </Link>
               </>
             ) : (
               <>
-                {level === 'all' ? 'သင်ခန်းစာ မရှိသေးပါ' : `${level} သင်ခန်းစာ မရှိသေးပါ`}
+                {level === 'all'
+                  ? tr('သင်ခန်းစာ မရှိသေးပါ')
+                  : `${level} — ${tr('သင်ခန်းစာ မရှိသေးပါ')}`}
                 {level !== 'all' && (
                   <button
                     onClick={() => setLevel('all')}
                     className="block mx-auto mt-2 text-primary"
                   >
-                    အဆင့် အားလုံး ကြည့်မယ်
+                    {tr('အဆင့် အားလုံး ကြည့်မယ်')}
                   </button>
                 )}
               </>

@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { LANG_CODES, LANGUAGES, type LangCode } from '@/data/languages';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 /** Language chips: 🇯🇵 ဂျပန် · 🇨🇳 တရုတ် · 🇰🇷 ကိုရီးယား · 🇬🇧 English (optionally "all"). */
 export default function LangPicker({
@@ -14,6 +15,7 @@ export default function LangPicker({
   allowAll?: boolean;
   size?: 'sm' | 'md';
 }) {
+  const { locale } = useLocale();
   const options: (LangCode | 'all')[] = allowAll ? ['all', ...LANG_CODES] : [...LANG_CODES];
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -28,7 +30,11 @@ export default function LangPicker({
               size === 'sm' ? 'px-3 py-1 text-[12px]' : 'px-3.5 py-1.5 text-[13px]'
             } ${on ? 'bg-primary text-white border-primary' : 'border-border text-muted-foreground bg-card'}`}
           >
-            {c === 'all' ? '🌏 အားလုံး' : `${LANGUAGES[c].flag} ${LANGUAGES[c].my}`}
+            {c === 'all'
+              ? locale === 'en'
+                ? '🌏 All'
+                : '🌏 အားလုံး'
+              : `${LANGUAGES[c].flag} ${locale === 'en' ? LANGUAGES[c].en : LANGUAGES[c].my}`}
           </button>
         );
       })}

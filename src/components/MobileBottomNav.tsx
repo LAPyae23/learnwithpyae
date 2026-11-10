@@ -6,12 +6,15 @@ import ModeSwitcher from './ModeSwitcher';
 import { MODES } from './navItems';
 import { isActive, useMode } from './useMode';
 import { initial, logout } from './useCurrentUser';
+import { useT } from '@/i18n/LocaleProvider';
+import LocaleToggle from '@/i18n/LocaleToggle';
 
 type IconName = Parameters<typeof Icon>[0]['name'];
 
 /** Phone tab bar for the current mode, plus a "more" sheet with everything else. */
 export default function MobileBottomNav() {
   const { mode, config, allowed, user, current } = useMode();
+  const tr = useT();
   const [open, setOpen] = useState(false);
 
   // Close the sheet after navigating
@@ -45,7 +48,7 @@ export default function MobileBottomNav() {
                       variant={active ? 'solid' : 'outline'}
                     />
                   </span>
-                  <span className="leading-tight">{t.label}</span>
+                  <span className="leading-tight">{tr(t.label)}</span>
                 </Link>
               </li>
             );
@@ -60,7 +63,7 @@ export default function MobileBottomNav() {
               <span className={`px-4 py-0.5 rounded-full ${moreOn ? 'bg-secondary' : ''}`}>
                 <Icon name="Squares2X2Icon" size={22} variant={moreOn ? 'solid' : 'outline'} />
               </span>
-              <span className="leading-tight">နောက်ထပ်</span>
+              <span className="leading-tight">{tr('နောက်ထပ်')}</span>
             </button>
           </li>
         </ul>
@@ -91,7 +94,7 @@ export default function MobileBottomNav() {
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-[15px] truncate">{user?.name}</p>
                   <p className="text-[12px] text-muted-foreground">
-                    {MODES[mode].emoji} {MODES[mode].label}
+                    {MODES[mode].emoji} {tr(MODES[mode].label)}
                   </p>
                 </div>
                 <button
@@ -118,7 +121,7 @@ export default function MobileBottomNav() {
                 return (
                   <div key={s.label}>
                     <p className="text-[12px] font-semibold text-muted-foreground px-1 mb-2">
-                      {s.label}
+                      {tr(s.label)}
                     </p>
                     <div className="grid grid-cols-4 gap-2">
                       {items.map((i) => {
@@ -139,7 +142,7 @@ export default function MobileBottomNav() {
                               <Icon name={i.icon as IconName} size={22} />
                             </span>
                             <span className="text-[11px] leading-tight line-clamp-2">
-                              {i.shortLabel ?? i.label}
+                              {tr(i.shortLabel ?? i.label)}
                             </span>
                           </Link>
                         );
@@ -153,8 +156,11 @@ export default function MobileBottomNav() {
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-border text-[13.5px] font-semibold text-danger"
               >
                 <Icon name="ArrowRightOnRectangleIcon" size={18} />
-                အကောင့်မှ ထွက်ရန်
+                {tr('အကောင့်မှ ထွက်ရန်')}
               </button>
+              <div className="flex justify-center">
+                <LocaleToggle />
+              </div>
             </div>
           </div>
         </div>

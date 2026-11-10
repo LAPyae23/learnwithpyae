@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { MODES, type Mode } from './navItems';
 import { rememberMode } from './useMode';
 import { useCurrentUser } from './useCurrentUser';
+import { useT } from '@/i18n/LocaleProvider';
 
 /** Switch between student / teacher / admin views (only shows modes the user has). */
 export default function ModeSwitcher({
@@ -19,6 +20,7 @@ export default function ModeSwitcher({
 }) {
   const router = useRouter();
   const { user } = useCurrentUser();
+  const tr = useT();
   if (allowed.length < 2) return null;
   return (
     <div
@@ -40,7 +42,7 @@ export default function ModeSwitcher({
           aria-pressed={m === mode}
         >
           <span className="text-[15px]">{MODES[m].emoji}</span>
-          {!compact && <span className="whitespace-nowrap">{MODES[m].label}</span>}
+          {!compact && <span className="whitespace-nowrap">{tr(MODES[m].label)}</span>}
         </button>
       ))}
     </div>
