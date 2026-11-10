@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import AppLayout from '@/components/AppLayout';
 import { api } from '@/lib/api';
+import { LangMultiPicker } from '@/components/LangPicker';
 
 interface Application {
   fullName: string;
@@ -33,6 +34,7 @@ export default function TeachPage() {
   const [sending, setSending] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
+    languages: ['ja'] as string[],
     jlptLevel: 'N2',
     experience: '',
     bio: '',
@@ -47,7 +49,8 @@ export default function TeachPage() {
         setApp(r.application);
         if (r.application) {
           const { fullName, jlptLevel, experience, bio, contact, sampleUrl } = r.application;
-          setForm({ fullName, jlptLevel, experience, bio, contact, sampleUrl });
+          const languages = (r.application as { languages?: string[] }).languages ?? ['ja'];
+          setForm({ fullName, languages, jlptLevel, experience, bio, contact, sampleUrl });
         }
       })
       .catch((e) => toast.error(e.message))
@@ -85,8 +88,8 @@ export default function TeachPage() {
         <div>
           <h1 className="text-[22px] font-bold text-foreground">ဆရာ အဖြစ် ပါဝင်ရန်</h1>
           <p className="text-[13.5px] text-muted-foreground mt-1">
-            ဂျပန်စာ သင်ပေးချင်ပါသလား? NihongoAcademy မှာ သင်ခန်းစာ တင်ပြီး မြန်မာ ကျောင်းသားတွေကို
-            ကူညီပါ။
+            ဂျပန်၊ တရုတ်၊ ကိုရီးယား၊ English — ဘာသာစကား သင်ပေးချင်ပါသလား? NihongoAcademy မှာ
+            သင်ခန်းစာ တင်ပြီး မြန်မာ ကျောင်းသားတွေကို ကူညီပါ။
           </p>
         </div>
 
@@ -156,8 +159,15 @@ export default function TeachPage() {
                     maxLength={80}
                   />
                 </label>
+                <div>
+                  <p className="text-[13px] font-semibold mb-1.5">သင်ပေးမယ့် ဘာသာစကား *</p>
+                  <LangMultiPicker
+                    value={form.languages}
+                    onChange={(languages) => setForm({ ...form, languages })}
+                  />
+                </div>
                 <label className="block text-[13px] font-semibold">
-                  ဂျပန်စာ အဆင့် *
+                  ဂျပန်စာ အဆင့် (ဂျပန်စာ သင်ရင်)
                   <select
                     className={`${field} mt-1`}
                     value={form.jlptLevel}
@@ -168,7 +178,7 @@ export default function TeachPage() {
                         JLPT {l}
                       </option>
                     ))}
-                    <option value="none">JLPT မဖြေရသေးပါ</option>
+                    <option value="none">JLPT မရှိ / ဂျပန်စာ မသင်ပါ</option>
                   </select>
                 </label>
                 <label className="block text-[13px] font-semibold">

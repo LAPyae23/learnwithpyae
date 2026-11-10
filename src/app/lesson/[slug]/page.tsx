@@ -9,6 +9,7 @@ import LessonVideoPlayer from '../components/LessonVideoPlayer';
 import TeFormTabs from '../components/TeFormTabs';
 import { CommentSection, PremiumLock, ReactionBar } from '../components/LessonSocial';
 import FollowButton from '@/components/FollowButton';
+import { flagOf } from '@/components/LangPicker';
 import {
   LEGACY_TE_FORM_SLUG,
   STATUS_LABEL,
@@ -112,7 +113,7 @@ export default function LessonViewerPage({ params }: { params: Promise<{ slug: s
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#006633]/10 text-[#006633] border border-[#006633]/20">
-                  {lesson.level} အဆင့်
+                  {flagOf(lesson.language)} {lesson.level}
                 </span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${

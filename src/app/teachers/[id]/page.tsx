@@ -4,6 +4,7 @@ import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import FollowButton from '@/components/FollowButton';
 import TutoringSlots from '@/components/TutoringSlots';
+import { flagOf } from '@/components/LangPicker';
 import { api } from '@/lib/api';
 import { youTubeId } from '@/lib/youtube';
 import type { LessonItem } from '@/data/lessonMeta';
@@ -15,6 +16,7 @@ interface Teacher {
   headline: string;
   bio: string;
   jlptLevel: string;
+  languages: string[];
   followers: number;
   joinedAt: string;
   totalViews: number;
@@ -86,6 +88,11 @@ export default function TeacherProfilePage({ params }: { params: Promise<{ id: s
                 {data.teacher.jlptLevel && (
                   <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-primary">
                     JLPT {data.teacher.jlptLevel}
+                  </span>
+                )}
+                {data.teacher.languages.length > 0 && (
+                  <span className="text-[16px]" title="သင်ပေးတဲ့ ဘာသာစကား">
+                    {data.teacher.languages.map((c) => flagOf(c)).join(' ')}
                   </span>
                 )}
               </h1>

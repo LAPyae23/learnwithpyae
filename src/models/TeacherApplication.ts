@@ -5,7 +5,8 @@ const teacherApplicationSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
     fullName: { type: String, required: true, trim: true, maxlength: 80 },
-    jlptLevel: { type: String, enum: ['N1', 'N2', 'N3', 'N4', 'N5', 'none'], required: true },
+    languages: { type: [String], default: ['ja'] }, // languages they want to teach
+    jlptLevel: { type: String, enum: ['N1', 'N2', 'N3', 'N4', 'N5', 'none'], required: true }, // or 'none' for non-Japanese
     experience: { type: String, default: '', trim: true, maxlength: 1000 },
     bio: { type: String, default: '', trim: true, maxlength: 1000 },
     contact: { type: String, required: true, trim: true, maxlength: 120 }, // phone / Telegram

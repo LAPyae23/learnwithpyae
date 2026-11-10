@@ -11,6 +11,9 @@ import { useCurrentUser } from '@/components/useCurrentUser';
 import { lastMode } from '@/components/useMode';
 import { MODES, modesFor } from '@/components/navItems';
 import TodayPlanCard from './components/TodayPlanCard';
+import LangPicker, { flagOf } from '@/components/LangPicker';
+import { isLang, LANGUAGES, type LangCode } from '@/data/languages';
+import { toast } from 'sonner';
 import type { LessonItem } from '@/data/lessonMeta';
 
 interface Stats {
@@ -34,27 +37,38 @@ interface Group {
 
 type IconName = Parameters<typeof Icon>[0]['name'];
 
-const TOOLS: { href: string; label: string; icon: IconName; color: string; ai?: boolean }[] = [
+const TOOLS: {
+  href: string;
+  label: string;
+  icon: IconName;
+  color: string;
+  ai?: boolean;
+  jaOnly?: boolean;
+}[] = [
   {
     href: '/exam',
+    jaOnly: true,
     label: 'Mock Test',
     icon: 'DocumentTextIcon',
     color: 'bg-blue-50 text-blue-600',
   },
   {
     href: '/kanji',
+    jaOnly: true,
     label: 'Kanji',
     icon: 'PencilSquareIcon',
     color: 'bg-orange-50 text-orange-600',
   },
   {
     href: '/speak',
+    jaOnly: true,
     label: 'အသံထွက်',
     icon: 'SpeakerWaveIcon',
     color: 'bg-purple-50 text-purple-600',
   },
   {
     href: '/sensei',
+    jaOnly: true,
     label: 'AI ဆရာ',
     icon: 'SparklesIcon',
     color: 'bg-pink-50 text-pink-600',
@@ -79,6 +93,19 @@ export default function StudentHome() {
   const [due, setDue] = useState<number | null>(null);
   const [lessons, setLessons] = useState<LessonItem[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [lang, setLang] = useState<LangCode>('ja');
+  useEffect(() => {
+    if (user?.learningLang && isLang(user.learningLang)) setLang(user.learningLang);
+  }, [user?.learningLang]);
+
+  async function chooseLang(v: LangCode) {
+    setLang(v);
+    await fetch('/api/auth/me', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ learningLang: v }),
+    }).catch(() => toast.error('သိမ်းလို့ မရပါ'));
+  }
 
   // Teachers, admins and agencies land on their own home unless they chose the student mode
   useEffect(() => {
@@ -98,14 +125,18 @@ export default function StudentHome() {
     api<{ decks: Deck[] }>('/api/decks')
       .then((r) => setDue(r.decks.reduce((a, d) => a + (d.due ?? 0), 0)))
       .catch(() => setDue(0));
-    api<{ lessons: LessonItem[] }>('/api/lessons?sort=new')
-      .then((r) => setLessons(r.lessons.slice(0, 6)))
-      .catch(() => {});
     api<{ mine: Group[] }>('/api/groups')
       .then((r) => setGroups(r.mine.slice(0, 3)))
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    api<{ lessons: LessonItem[] }>(`/api/lessons?sort=new&lang=${lang}`)
+      .then((r) => setLessons(r.lessons.slice(0, 6)))
+      .catch(() => {});
+  }, [lang]);
+
+  const ja = lang === 'ja';
   const hour = new Date().getHours();
   const hello = hour < 12 ? 'မင်္ဂလာ နံနက်ခင်းပါ' : hour < 17 ? 'မင်္ဂလာပါ' : 'မင်္ဂလာ ညနေခင်းပါ';
 
@@ -131,21 +162,45 @@ export default function StudentHome() {
           </Link>
         </div>
 
-        <Link
-          href="/flashcards"
-          className="block bg-gradient-to-br from-[#006633] to-emerald-500 text-white rounded-3xl p-5 active:scale-[0.99] transition-transform"
-        >
-          <p className="text-[13px] text-white/85">ဒီနေ့ ပြန်လှန်ရမယ့် ကတ်</p>
-          <p className="text-[40px] font-bold leading-tight tabular-nums">{due ?? '…'}</p>
-          <p className="mt-2 inline-flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-1.5 text-[13px] font-semibold">
-            {due ? 'စလေ့လာမယ်' : 'ကတ်အသစ် လေ့လာမယ်'} <Icon name="ArrowRightIcon" size={14} />
-          </p>
-        </Link>
+        <div>
+          <p className="text-[12px] font-semibold text-muted-foreground mb-1.5">ဘာ လေ့လာနေလဲ?</p>
+          <LangPicker value={lang} onChange={(v) => v !== 'all' && chooseLang(v)} size="sm" />
+        </div>
 
-        <TodayPlanCard />
+        {!ja && (
+          <Link
+            href="/lesson"
+            className="block bg-gradient-to-br from-[#006633] to-emerald-500 text-white rounded-3xl p-5"
+          >
+            <p className="text-[13px] text-white/85">
+              {LANGUAGES[lang].flag} {LANGUAGES[lang].my} ({LANGUAGES[lang].exam})
+            </p>
+            <p className="text-[22px] font-bold leading-snug mt-1">
+              ဆရာတွေရဲ့ video သင်ခန်းစာနဲ့ လေ့လာမယ်
+            </p>
+            <p className="mt-2 inline-flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-1.5 text-[13px] font-semibold">
+              သင်ခန်းစာ ကြည့်မယ် <Icon name="ArrowRightIcon" size={14} />
+            </p>
+          </Link>
+        )}
+
+        {ja && (
+          <Link
+            href="/flashcards"
+            className="block bg-gradient-to-br from-[#006633] to-emerald-500 text-white rounded-3xl p-5 active:scale-[0.99] transition-transform"
+          >
+            <p className="text-[13px] text-white/85">ဒီနေ့ ပြန်လှန်ရမယ့် ကတ်</p>
+            <p className="text-[40px] font-bold leading-tight tabular-nums">{due ?? '…'}</p>
+            <p className="mt-2 inline-flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-1.5 text-[13px] font-semibold">
+              {due ? 'စလေ့လာမယ်' : 'ကတ်အသစ် လေ့လာမယ်'} <Icon name="ArrowRightIcon" size={14} />
+            </p>
+          </Link>
+        )}
+
+        {ja && <TodayPlanCard />}
 
         <div className="grid grid-cols-4 gap-2">
-          {TOOLS.filter((t) => !t.ai || AI_ENABLED).map((t) => (
+          {TOOLS.filter((t) => (!t.ai || AI_ENABLED) && (ja || !t.jaOnly)).map((t) => (
             <Link
               key={t.href}
               href={t.href}
@@ -206,7 +261,7 @@ export default function StudentHome() {
                         />
                       )}
                       <span className="absolute top-1.5 left-1.5 text-[10.5px] font-bold px-1.5 py-0.5 rounded bg-white/90 text-primary">
-                        {l.level}
+                        {flagOf(l.language)} {l.level}
                       </span>
                       {l.access === 'premium' && (
                         <span className="absolute top-1.5 right-1.5 text-[10.5px] font-bold px-1.5 py-0.5 rounded bg-yellow-400 text-gray-900">

@@ -27,6 +27,7 @@ export async function GET(req: Request) {
       id: String(_id),
       user: user ? { id: String(user._id), name: user.name, email: user.email } : null,
       fullName: a.fullName,
+      languages: a.languages ?? ['ja'],
       jlptLevel: a.jlptLevel,
       experience: a.experience,
       bio: a.bio,

@@ -50,6 +50,7 @@ export function publicUser(u: {
   email: string;
   role?: string | null;
   targetLevel?: string | null;
+  learningLang?: string | null;
   examSession?: string | null;
   plan?: { type?: string | null; expiresAt?: Date | null } | null;
   streak?: { current?: number | null; longest?: number | null } | null;
@@ -61,6 +62,7 @@ export function publicUser(u: {
     email: u.email,
     role: u.role ?? 'student',
     targetLevel: u.targetLevel ?? null,
+    learningLang: u.learningLang ?? 'ja',
     examSession: u.examSession ?? null,
     plan: { type: u.plan?.type ?? 'free', expiresAt: u.plan?.expiresAt ?? null },
     streak: { current: u.streak?.current ?? 0, longest: u.streak?.longest ?? 0 },

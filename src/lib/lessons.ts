@@ -1,12 +1,14 @@
 import 'server-only';
 import crypto from 'node:crypto';
 import { z } from 'zod';
-import { LESSON_LEVELS, LESSON_STATUSES } from '@/models/Lesson';
+import { LESSON_STATUSES } from '@/models/Lesson';
+import { ALL_LEVELS, LANG_CODES } from '@/data/languages';
 import { isPlayableUrl } from './youtube';
 
 export const LessonInput = z.object({
   title: z.string().trim().min(2, 'ခေါင်းစဉ် ထည့်ပါ').max(140),
-  level: z.enum(LESSON_LEVELS),
+  language: z.enum(LANG_CODES).optional(),
+  level: z.enum(ALL_LEVELS as [string, ...string[]]),
   chapter: z.string().trim().max(80).optional(),
   summary: z.string().trim().max(400).optional(),
   videoUrl: z
@@ -34,6 +36,7 @@ interface LessonLike {
   slug: string;
   title: string;
   level: string;
+  language?: string | null;
   chapter?: string | null;
   summary?: string | null;
   videoUrl?: string | null;
@@ -65,6 +68,7 @@ export function serializeLesson(l: LessonLike, withContent = false) {
     slug: l.slug,
     title: l.title,
     level: l.level,
+    language: l.language ?? 'ja',
     chapter: l.chapter ?? '',
     summary: l.summary ?? '',
     videoUrl: l.videoUrl ?? '',

@@ -5,19 +5,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import AppLayout from '@/components/AppLayout';
 import { api } from '@/lib/api';
+import LangPicker, { flagOf } from '@/components/LangPicker';
+import { LANGUAGES, type LangCode } from '@/data/languages';
 
 interface GroupCard {
   id: string;
   name: string;
   description: string;
   level: string;
+  language?: string;
   emoji: string;
   isPublic: boolean;
   memberCount: number;
   maxMembers: number;
 }
 
-const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1', 'mixed'] as const;
+const levelsFor = (lang: LangCode) => ['mixed', ...LANGUAGES[lang].levels];
 const levelLabel = (l: string) => (l === 'mixed' ? 'အဆင့်စုံ' : l);
 const EMOJIS = ['📚', '🔥', '🌸', '🗻', '🍙', '🎌', '💪', '⭐'];
 const field =
@@ -32,7 +35,7 @@ function Card({ g, action }: { g: GroupCard; action?: React.ReactNode }) {
       <div className="flex-1 min-w-0">
         <p className="font-bold text-[15px] truncate">{g.name}</p>
         <p className="text-[12px] text-muted-foreground">
-          {levelLabel(g.level)} · 👥 {g.memberCount}/{g.maxMembers}{' '}
+          {flagOf(g.language)} {levelLabel(g.level)} · 👥 {g.memberCount}/{g.maxMembers}{' '}
           {g.isPublic ? '' : '· 🔒 ဖိတ်မှဝင်'}
         </p>
         {g.description && (
@@ -48,7 +51,8 @@ function CreateForm({ onCreated }: { onCreated: (id: string) => void }) {
   const [f, setF] = useState({
     name: '',
     description: '',
-    level: 'N5' as (typeof LEVELS)[number],
+    language: 'ja' as LangCode,
+    level: 'mixed',
     emoji: '📚',
     isPublic: true,
   });
@@ -96,8 +100,13 @@ function CreateForm({ onCreated }: { onCreated: (id: string) => void }) {
         maxLength={300}
         placeholder="ရည်မှန်းချက် (ရွေးချယ်နိုင်) — ဥပမာ: နေ့တိုင်း ကတ် ၂၀ လုပ်မယ်"
       />
+      <LangPicker
+        value={f.language}
+        onChange={(v) => v !== 'all' && setF({ ...f, language: v, level: 'mixed' })}
+        size="sm"
+      />
       <div className="flex flex-wrap gap-2">
-        {LEVELS.map((l) => (
+        {levelsFor(f.language).map((l) => (
           <button
             key={l}
             type="button"
@@ -143,18 +152,18 @@ function Groups() {
   const router = useRouter();
   const params = useSearchParams();
   const [data, setData] = useState<{ mine: GroupCard[]; discover: GroupCard[] } | null>(null);
-  const [level, setLevel] = useState<string>('');
+  const [lang, setLang] = useState<LangCode | 'all'>('all');
   const [code, setCode] = useState(params.get('join') ?? '');
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
     api<{ mine: GroupCard[]; discover: GroupCard[] }>(
-      `/api/groups${level ? `?level=${level}` : ''}`
+      `/api/groups${lang === 'all' ? '' : `?lang=${lang}`}`
     )
       .then(setData)
       .catch((e) => toast.error(e.message));
-  }, [level]);
+  }, [lang]);
   useEffect(load, [load]);
 
   const join = useCallback(
@@ -233,21 +242,7 @@ function Groups() {
           <section>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
               <h2 className="font-bold text-[15px]">🌏 Public အုပ်စုများ</h2>
-              <div className="flex gap-1.5 flex-wrap">
-                {['', ...LEVELS].map((l) => (
-                  <button
-                    key={l || 'all'}
-                    onClick={() => setLevel(l)}
-                    className={`px-2.5 py-1 rounded-full border text-[12px] ${
-                      level === l
-                        ? 'bg-primary text-white border-primary'
-                        : 'border-border text-muted-foreground'
-                    }`}
-                  >
-                    {l ? levelLabel(l) : 'အားလုံး'}
-                  </button>
-                ))}
-              </div>
+              <LangPicker value={lang} onChange={setLang} allowAll size="sm" />
             </div>
             {!data ? (
               <div className="h-24 rounded-2xl bg-muted animate-pulse" />

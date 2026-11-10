@@ -4,6 +4,7 @@ import { canTeach, getActor } from '@/lib/roles';
 import { hasPremium, LessonInput, serializeLesson } from '@/lib/lessons';
 import { Follow, LessonView, LessonVote } from '@/models/Social';
 import { Lesson, type LessonStatus } from '@/models/Lesson';
+import { isLevelOf } from '@/data/languages';
 import '@/models/User';
 
 export const runtime = 'nodejs';
@@ -85,6 +86,10 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const parsed = LessonInput.partial().safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonError(parsed.error.issues[0]?.message ?? 'Data မမှန်ပါ', 400);
   const { submit, status: wanted, reviewNote, ...fields } = parsed.data;
+
+  const nextLang = fields.language ?? lesson.language ?? 'ja';
+  const nextLevel = fields.level ?? lesson.level;
+  if (!isLevelOf(nextLang, nextLevel)) return jsonError('ဒီဘာသာစကားအတွက် အဆင့် မမှန်ပါ', 400);
 
   // Drop undefined so partial updates don't clear fields
   for (const [k, v] of Object.entries(fields)) {

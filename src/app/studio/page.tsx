@@ -8,13 +8,9 @@ import RichText from '@/components/RichText';
 import { api } from '@/lib/api';
 import { youTubeId } from '@/lib/youtube';
 import { useCurrentUser } from '@/components/useCurrentUser';
-import {
-  LEVELS,
-  STATUS_LABEL,
-  type LessonItem,
-  type LessonStatus,
-  type Level,
-} from '@/data/lessonMeta';
+import LangPicker, { LangMultiPicker, flagOf } from '@/components/LangPicker';
+import { isLang, LANGUAGES, type LangCode } from '@/data/languages';
+import { STATUS_LABEL, type LessonItem, type LessonStatus, type Level } from '@/data/lessonMeta';
 
 const field =
   'w-full px-3 py-2.5 rounded-xl border border-border bg-background text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/30';
@@ -22,6 +18,7 @@ const field =
 interface Draft {
   title: string;
   level: Level;
+  language: LangCode;
   chapter: string;
   summary: string;
   videoUrl: string;
@@ -36,6 +33,7 @@ interface Draft {
 const EMPTY: Draft = {
   title: '',
   level: 'N5',
+  language: 'ja',
   chapter: '',
   summary: '',
   videoUrl: '',
@@ -50,6 +48,7 @@ const EMPTY: Draft = {
 const toDraft = (l: LessonItem): Draft => ({
   title: l.title,
   level: l.level,
+  language: (isLang(l.language) ? l.language : 'ja') as LangCode,
   chapter: l.chapter,
   summary: l.summary,
   videoUrl: l.videoUrl,
@@ -100,6 +99,7 @@ function Editor({
     const body: Record<string, unknown> = {
       title: d.title,
       level: d.level,
+      language: d.language,
       chapter: d.chapter,
       summary: d.summary,
       videoUrl: d.videoUrl,
@@ -173,11 +173,22 @@ function Editor({
         />
       </label>
 
+      <div>
+        <p className="text-[13px] font-semibold mb-1.5">ဘာသာစကား</p>
+        <LangPicker
+          value={d.language}
+          onChange={(v) =>
+            v !== 'all' && setD({ ...d, language: v, level: LANGUAGES[v].levels[0] })
+          }
+          size="sm"
+        />
+      </div>
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <label className="block text-[13px] font-semibold">
-          အဆင့်
+          အဆင့် ({LANGUAGES[d.language].exam})
           <select className={`${field} mt-1`} value={d.level} onChange={set('level')}>
-            {LEVELS.map((l) => (
+            {LANGUAGES[d.language].levels.map((l) => (
               <option key={l}>{l}</option>
             ))}
           </select>
@@ -374,11 +385,16 @@ function Editor({
 
 /** The teacher's public profile (shown on /teachers/[id]). */
 function ProfileEditor() {
-  const [p, setP] = useState<{ id: string; headline: string; bio: string } | null>(null);
+  const [p, setP] = useState<{
+    id: string;
+    headline: string;
+    bio: string;
+    languages: string[];
+  } | null>(null);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   useEffect(() => {
-    api<{ id: string; headline: string; bio: string }>('/api/teacher/profile')
+    api<{ id: string; headline: string; bio: string; languages: string[] }>('/api/teacher/profile')
       .then(setP)
       .catch(() => setP(null));
   }, []);
@@ -389,7 +405,7 @@ function ProfileEditor() {
     try {
       await api('/api/teacher/profile', {
         method: 'PUT',
-        json: { headline: p!.headline, bio: p!.bio },
+        json: { headline: p!.headline, bio: p!.bio, languages: p!.languages },
       });
       toast.success('Profile သိမ်းပြီးပါပြီ');
       setOpen(false);
@@ -436,6 +452,13 @@ function ProfileEditor() {
               placeholder="ဥပမာ - N5 ကနေ N3 အထိ လွယ်လွယ်ကူကူ သင်ပေးမယ့် ဆရာမ"
             />
           </label>
+          <div>
+            <p className="text-[13px] font-semibold mb-1.5">သင်ပေးတဲ့ ဘာသာစကား</p>
+            <LangMultiPicker
+              value={p.languages}
+              onChange={(languages) => setP({ ...p, languages })}
+            />
+          </div>
           <label className="block text-[13px] font-semibold">
             ကိုယ့်အကြောင်း
             <textarea
@@ -563,7 +586,7 @@ function Studio() {
                 {lessons.map((l) => (
                   <div key={l.id} className="px-5 py-3 flex items-center gap-3">
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-secondary text-primary">
-                      {l.level}
+                      {flagOf(l.language)} {l.level}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-[14px] truncate">{l.title}</p>

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import FollowButton from '@/components/FollowButton';
+import LangPicker, { flagOf } from '@/components/LangPicker';
+import type { LangCode } from '@/data/languages';
 import { api } from '@/lib/api';
 import { useCurrentUser } from '@/components/useCurrentUser';
 
@@ -11,6 +13,7 @@ interface TeacherCard {
   name: string;
   headline: string;
   jlptLevel: string;
+  languages: string[];
   followers: number;
   lessons: number;
   following: boolean;
@@ -19,12 +22,14 @@ interface TeacherCard {
 export default function TeachersPage() {
   const { user } = useCurrentUser();
   const [teachers, setTeachers] = useState<TeacherCard[] | null>(null);
+  const [lang, setLang] = useState<LangCode | 'all'>('all');
 
   useEffect(() => {
-    api<{ teachers: TeacherCard[] }>('/api/teachers')
+    setTeachers(null);
+    api<{ teachers: TeacherCard[] }>(`/api/teachers${lang === 'all' ? '' : `?lang=${lang}`}`)
       .then((r) => setTeachers(r.teachers))
       .catch(() => setTeachers([]));
-  }, []);
+  }, [lang]);
 
   return (
     <AppLayout activePath="/teachers">
@@ -44,6 +49,10 @@ export default function TeachersPage() {
               ✋ ဆရာ အဖြစ် ပါဝင်မယ်
             </Link>
           )}
+        </div>
+
+        <div className="mb-4">
+          <LangPicker value={lang} onChange={setLang} allowAll />
         </div>
 
         {teachers === null ? (
@@ -74,7 +83,7 @@ export default function TeachersPage() {
                 <p className="font-bold text-[15px] mt-3">{t.name}</p>
                 {t.jlptLevel && (
                   <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-primary mt-1">
-                    JLPT {t.jlptLevel}
+                    {t.languages.map((c) => flagOf(c)).join(' ')} JLPT {t.jlptLevel}
                   </span>
                 )}
                 {t.headline && (

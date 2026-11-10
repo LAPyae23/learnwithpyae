@@ -1,6 +1,7 @@
 /** Client-safe lesson constants (the Mongoose model imports nothing from here on purpose). */
+/** Japanese levels (kept for older code); other languages: see data/languages.ts */
 export const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
-export type Level = (typeof LEVELS)[number];
+export type Level = string;
 
 export type LessonStatus = 'draft' | 'pending' | 'published' | 'rejected';
 
@@ -36,6 +37,7 @@ export interface LessonItem {
   slug: string;
   title: string;
   level: Level;
+  language: string;
   chapter: string;
   summary: string;
   videoUrl: string;

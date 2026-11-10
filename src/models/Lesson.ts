@@ -1,5 +1,8 @@
 import { Schema, model, models, type InferSchemaType, type Model } from 'mongoose';
 
+import { ALL_LEVELS, LANG_CODES } from '@/data/languages';
+
+/** @deprecated Japanese only — use ALL_LEVELS / levelsOf(language) */
 export const LESSON_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
 export const LESSON_STATUSES = ['draft', 'pending', 'published', 'rejected'] as const;
 export type LessonStatus = (typeof LESSON_STATUSES)[number];
@@ -12,7 +15,9 @@ const lessonSchema = new Schema(
   {
     slug: { type: String, required: true, unique: true },
     title: { type: String, required: true, trim: true, maxlength: 140 },
-    level: { type: String, enum: LESSON_LEVELS, required: true, index: true },
+    // Language being taught, and its level (JLPT / HSK / TOPIK / CEFR)
+    language: { type: String, enum: LANG_CODES, default: 'ja', index: true },
+    level: { type: String, enum: ALL_LEVELS, required: true, index: true },
     chapter: { type: String, default: '', trim: true, maxlength: 80 },
     summary: { type: String, default: '', trim: true, maxlength: 400 },
     videoUrl: { type: String, default: '', trim: true, maxlength: 500 },

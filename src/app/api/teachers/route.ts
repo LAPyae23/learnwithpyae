@@ -4,16 +4,30 @@ import { getActor } from '@/lib/roles';
 import { User } from '@/models/User';
 import { Lesson } from '@/models/Lesson';
 import { Follow } from '@/models/Social';
+import { isLang } from '@/data/languages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /** All teachers with their published-lesson count, followers, and whether I follow them. */
-export async function GET() {
+export async function GET(req: Request) {
   const actor = await getActor();
   if (!actor) return jsonError('Not signed in', 401);
+  const lang = new URL(req.url).searchParams.get('lang');
 
-  const teachers = await User.find({ role: 'teacher' })
+  const teachers = await User.find({
+    role: 'teacher',
+    ...(lang && isLang(lang)
+      ? lang === 'ja'
+        ? {
+            $or: [
+              { 'teacherProfile.languages': 'ja' },
+              { 'teacherProfile.languages': { $exists: false } },
+            ],
+          }
+        : { 'teacherProfile.languages': lang }
+      : {}),
+  })
     .select('name teacherProfile createdAt')
     .sort({ 'teacherProfile.followers': -1, createdAt: 1 })
     .limit(200)
@@ -37,6 +51,7 @@ export async function GET() {
       name: t.name,
       headline: t.teacherProfile?.headline ?? '',
       jlptLevel: t.teacherProfile?.jlptLevel ?? '',
+      languages: t.teacherProfile?.languages?.length ? t.teacherProfile.languages : ['ja'],
       followers: t.teacherProfile?.followers ?? 0,
       lessons: countMap.get(String(t._id))?.n ?? 0,
       following: followSet.has(String(t._id)),

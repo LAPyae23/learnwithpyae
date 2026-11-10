@@ -5,7 +5,9 @@ import AppLayout from '@/components/AppLayout';
 import { api } from '@/lib/api';
 import { youTubeId } from '@/lib/youtube';
 import { useCurrentUser } from '@/components/useCurrentUser';
-import { LEVELS, REACTIONS, totalReactions, type Level, type LessonItem } from '@/data/lessonMeta';
+import { REACTIONS, totalReactions, type Level, type LessonItem } from '@/data/lessonMeta';
+import LangPicker, { flagOf } from '@/components/LangPicker';
+import { isLang, LANGUAGES, type LangCode } from '@/data/languages';
 
 type Feed = 'all' | 'following' | 'popular' | 'new';
 
@@ -44,7 +46,7 @@ function LessonCard({ l }: { l: LessonItem }) {
           </div>
         )}
         <span className="absolute top-2 left-2 text-[11px] font-bold px-2 py-0.5 rounded-full bg-white/90 text-primary">
-          {l.level}
+          {flagOf(l.language)} {l.level}
         </span>
         <span
           className={`absolute top-2 right-2 text-[11px] font-bold px-2 py-0.5 rounded-full ${
@@ -94,6 +96,7 @@ export default function LessonListPage() {
   const [lessons, setLessons] = useState<LessonItem[] | null>(null);
   const [error, setError] = useState('');
   const [level, setLevel] = useState<Level | 'all'>('all');
+  const [lang, setLang] = useState<LangCode | 'all'>('all');
 
   useEffect(() => {
     setLessons(null);
@@ -105,16 +108,17 @@ export default function LessonListPage() {
           : feed === 'new'
             ? '?sort=new'
             : '';
-    api<{ lessons: LessonItem[] }>(`/api/lessons${q}`)
+    const langQ = lang === 'all' ? '' : `${q ? '&' : '?'}lang=${lang}`;
+    api<{ lessons: LessonItem[] }>(`/api/lessons${q}${langQ}`)
       .then((r) => setLessons(r.lessons))
       .catch((e) => setError(e.message));
-  }, [feed]);
+  }, [feed, lang]);
 
+  // Start on the language the learner is studying
   useEffect(() => {
-    if (user?.targetLevel && LEVELS.includes(user.targetLevel as Level)) {
-      setLevel(user.targetLevel as Level);
-    }
-  }, [user?.targetLevel]);
+    if (user?.learningLang && isLang(user.learningLang)) setLang(user.learningLang);
+  }, [user?.learningLang]);
+  useEffect(() => setLevel('all'), [lang]);
 
   const shown = useMemo(
     () => (lessons ?? []).filter((l) => level === 'all' || l.level === level),
@@ -129,7 +133,8 @@ export default function LessonListPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">သင်ခန်းစာများ</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              ဆရာ/ဆရာမတွေ မြန်မာလို ရှင်းပြထားတဲ့ video သင်ခန်းစာတွေ
+              ဂျပန်၊ တရုတ်၊ ကိုရီးယား၊ English — ဆရာ/ဆရာမတွေ မြန်မာလို ရှင်းပြထားတဲ့ video
+              သင်ခန်းစာတွေ
             </p>
           </div>
           <div className="flex gap-2">
@@ -150,6 +155,10 @@ export default function LessonListPage() {
           </div>
         </div>
 
+        <div className="mb-3">
+          <LangPicker value={lang} onChange={setLang} allowAll />
+        </div>
+
         <div className="flex gap-2 overflow-x-auto pb-1 mb-3">
           {FEEDS.map((f) => (
             <button
@@ -165,7 +174,7 @@ export default function LessonListPage() {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-5">
-          {(['all', ...LEVELS] as const).map((l) => (
+          {(['all', ...(lang === 'all' ? [] : LANGUAGES[lang].levels)] as string[]).map((l) => (
             <button
               key={l}
               onClick={() => setLevel(l)}

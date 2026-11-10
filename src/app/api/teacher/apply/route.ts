@@ -3,12 +3,14 @@ import { z } from 'zod';
 import { jsonError } from '@/lib/auth';
 import { getActor } from '@/lib/roles';
 import { TeacherApplication } from '@/models/TeacherApplication';
+import { LANG_CODES } from '@/data/languages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const Input = z.object({
   fullName: z.string().trim().min(2, 'အမည် ထည့်ပါ').max(80),
+  languages: z.array(z.enum(LANG_CODES)).min(1, 'သင်မယ့် ဘာသာစကား ရွေးပါ').max(4).default(['ja']),
   jlptLevel: z.enum(['N1', 'N2', 'N3', 'N4', 'N5', 'none']),
   experience: z.string().trim().max(1000).optional(),
   bio: z.string().trim().max(1000).optional(),
@@ -19,6 +21,7 @@ const Input = z.object({
 const view = (a: Record<string, unknown> | null) =>
   a && {
     fullName: a.fullName,
+    languages: a.languages ?? ['ja'],
     jlptLevel: a.jlptLevel,
     experience: a.experience,
     bio: a.bio,

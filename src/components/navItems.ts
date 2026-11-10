@@ -53,14 +53,14 @@ export const MODES: Record<Mode, ModeConfig> = {
         items: [
           { href: '/dashboard', label: 'ပင်မစာမျက်နှာ', icon: 'HomeIcon' },
           { href: '/lesson', label: 'သင်ခန်းစာများ', icon: 'PlayCircleIcon' },
-          { href: '/flashcards', label: 'Flashcard', icon: 'RectangleStackIcon' },
-          { href: '/exam', label: 'JLPT Mock Test', icon: 'DocumentTextIcon' },
-          { href: '/plan', label: 'လေ့လာရေး အစီအစဉ်', icon: 'CalendarDaysIcon' },
         ],
       },
       {
-        label: 'လေ့ကျင့်ရန်',
+        label: '🇯🇵 ဂျပန်စာ လေ့ကျင့်ရန်',
         items: [
+          { href: '/flashcards', label: 'Flashcard', icon: 'RectangleStackIcon' },
+          { href: '/exam', label: 'JLPT Mock Test', icon: 'DocumentTextIcon' },
+          { href: '/plan', label: 'JLPT အစီအစဉ်', icon: 'CalendarDaysIcon' },
           { href: '/kanji', label: 'Kanji လက်ရေး', icon: 'PencilSquareIcon' },
           { href: '/speak', label: 'အသံထွက် လေ့ကျင့်', icon: 'SpeakerWaveIcon' },
           ...ai([

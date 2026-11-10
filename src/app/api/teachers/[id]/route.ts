@@ -49,6 +49,7 @@ export async function GET(_req: Request, { params }: Ctx) {
       headline: t.teacherProfile?.headline ?? '',
       bio: t.teacherProfile?.bio ?? '',
       jlptLevel: t.teacherProfile?.jlptLevel ?? '',
+      languages: t.teacherProfile?.languages?.length ? t.teacherProfile.languages : ['ja'],
       followers: t.teacherProfile?.followers ?? 0,
       joinedAt: t.createdAt,
       totalViews: totals.views,

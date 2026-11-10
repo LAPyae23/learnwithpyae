@@ -21,6 +21,8 @@ const userSchema = new Schema(
       linkCode: { type: String, default: null, index: true },
       linkCodeExpiresAt: { type: Date, default: null },
     },
+    // The language the learner is studying now (ja / zh / ko / en)
+    learningLang: { type: String, default: 'ja' },
     // Invite friends: my code, and who invited me
     referralCode: { type: String, default: undefined, unique: true, sparse: true },
     referredBy: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
@@ -30,6 +32,7 @@ const userSchema = new Schema(
       bio: { type: String, default: '', maxlength: 1500 },
       jlptLevel: { type: String, default: '' },
       followers: { type: Number, default: 0 },
+      languages: { type: [String], default: ['ja'] }, // languages this teacher teaches
       // 1-on-1 classes
       tutoringEnabled: { type: Boolean, default: false },
       pricePerHour: { type: Number, default: 0, min: 0 },

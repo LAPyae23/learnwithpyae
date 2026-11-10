@@ -53,6 +53,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           // Start the public profile from the application (the teacher can edit it later)
           'teacherProfile.bio': app.bio || app.experience || '',
           'teacherProfile.jlptLevel': app.jlptLevel === 'none' ? '' : app.jlptLevel,
+          'teacherProfile.languages': app.languages?.length ? app.languages : ['ja'],
         }
       );
     }

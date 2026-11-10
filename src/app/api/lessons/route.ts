@@ -6,6 +6,7 @@ import { Lesson, LESSON_STATUSES, type LessonStatus } from '@/models/Lesson';
 import '@/models/User';
 import { isValidObjectId } from 'mongoose';
 import { Follow } from '@/models/Social';
+import { isLang, isLevelOf } from '@/data/languages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,8 @@ export async function GET(req: Request) {
       const follows = await Follow.find({ follower: actor.id }).select('teacher').lean();
       filter.author = { $in: follows.map((f) => f.teacher) };
     }
+    const lang = params.get('lang');
+    if (lang && isLang(lang)) filter.language = lang;
     const teacher = params.get('teacher');
     if (teacher && isValidObjectId(teacher)) filter.author = teacher;
   }
@@ -70,12 +73,15 @@ export async function POST(req: Request) {
   const parsed = LessonInput.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return jsonError(parsed.error.issues[0]?.message ?? 'Data မမှန်ပါ', 400);
   const { submit, status: wanted, reviewNote, ...fields } = parsed.data;
+  const language = fields.language ?? 'ja';
+  if (!isLevelOf(language, fields.level)) return jsonError('ဒီဘာသာစကားအတွက် အဆင့် မမှန်ပါ', 400);
 
   const status: LessonStatus =
     actor.role === 'admin' ? (wanted ?? 'draft') : submit ? 'pending' : 'draft';
 
   const lesson = await Lesson.create({
     ...fields,
+    language,
     slug: newLessonSlug(fields.level),
     status,
     reviewNote: actor.role === 'admin' ? (reviewNote ?? '') : '',

@@ -6,6 +6,7 @@ import {
   type InferSchemaType,
   type Model,
 } from 'mongoose';
+import { ALL_LEVELS, LANG_CODES } from '@/data/languages';
 
 export const GROUP_MAX_MEMBERS = 30;
 
@@ -14,7 +15,8 @@ const studyGroupSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 60 },
     description: { type: String, default: '', trim: true, maxlength: 300 },
-    level: { type: String, enum: ['N5', 'N4', 'N3', 'N2', 'N1', 'mixed'], default: 'mixed' },
+    language: { type: String, enum: LANG_CODES, default: 'ja', index: true },
+    level: { type: String, enum: [...ALL_LEVELS, 'mixed'], default: 'mixed' },
     emoji: { type: String, default: '📚', maxlength: 8 },
     isPublic: { type: Boolean, default: true },
     inviteCode: { type: String, required: true, unique: true },

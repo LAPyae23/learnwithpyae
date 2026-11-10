@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { jsonError } from '@/lib/auth';
 import { canTeach, getActor } from '@/lib/roles';
 import { User } from '@/models/User';
+import { LANG_CODES } from '@/data/languages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,6 +11,7 @@ export const dynamic = 'force-dynamic';
 const Input = z.object({
   headline: z.string().trim().max(120),
   bio: z.string().trim().max(1500),
+  languages: z.array(z.enum(LANG_CODES)).min(1).max(4).optional(),
 });
 
 /** My public teacher profile. */
@@ -22,6 +24,7 @@ export async function GET() {
     id: actor.id,
     headline: u?.teacherProfile?.headline ?? '',
     bio: u?.teacherProfile?.bio ?? '',
+    languages: u?.teacherProfile?.languages?.length ? u.teacherProfile.languages : ['ja'],
   });
 }
 
@@ -33,7 +36,11 @@ export async function PUT(req: Request) {
   if (!parsed.success) return jsonError('Data မမှန်ပါ', 400);
   await User.updateOne(
     { _id: actor.id },
-    { 'teacherProfile.headline': parsed.data.headline, 'teacherProfile.bio': parsed.data.bio }
+    {
+      'teacherProfile.headline': parsed.data.headline,
+      'teacherProfile.bio': parsed.data.bio,
+      ...(parsed.data.languages ? { 'teacherProfile.languages': parsed.data.languages } : {}),
+    }
   );
   return NextResponse.json({ ok: true });
 }
