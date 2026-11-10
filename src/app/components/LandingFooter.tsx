@@ -83,18 +83,20 @@ export default function LandingFooter() {
           <div>
             <h4 className="font-bold text-[13px] text-white/40 mb-4">ဥပဒေဆိုင်ရာ</h4>
             <ul className="space-y-2.5">
-              {['ကိုယ်ရေးအချက်အလက် မူဝါဒ', 'ဝန်ဆောင်မှု စည်းကမ်းချက်', 'အကောင့်ဖျက်ရန်'].map(
-                (item, i) => (
-                  <li key={`footer-legal-${i}`}>
-                    <Link
-                      href="/"
-                      className="text-white/60 hover:text-white text-[14px] transition-colors"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                )
-              )}
+              {[
+                { label: 'ကိုယ်ရေးအချက်အလက် မူဝါဒ', href: '/privacy' },
+                { label: 'ဝန်ဆောင်မှု စည်းကမ်းချက်', href: '/terms' },
+                { label: 'အကောင့်ဖျက်ရန်', href: '/privacy#delete' },
+              ].map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-white/60 hover:text-white text-[14px] transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

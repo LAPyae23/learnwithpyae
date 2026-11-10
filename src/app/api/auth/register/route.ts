@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { connectDB } from '@/lib/db';
 import { hashPassword, jsonError, publicUser, setSessionCookie } from '@/lib/auth';
 import { User } from '@/models/User';
+import { blockedFor, clientIp, countAttempt, tooManyMessage } from '@/lib/attemptLimit';
 
 export const runtime = 'nodejs';
 
@@ -29,6 +30,12 @@ export async function POST(req: Request) {
   const { name, email, password, targetLevel, examDate, ref } = parsed.data;
 
   await connectDB();
+
+  // Stops scripted mass sign-ups: 10 new accounts per IP per hour
+  const limit = [{ key: `register:${clientIp(req)}`, max: 10, windowMin: 60 }];
+  const wait = await blockedFor(limit);
+  if (wait) return jsonError(tooManyMessage(wait), 429);
+
   if (await User.exists({ email })) {
     return jsonError('ဒီ email နဲ့ အကောင့် ရှိပြီးသားပါ', 409);
   }
@@ -47,6 +54,7 @@ export async function POST(req: Request) {
     referredBy: referrer?._id ?? null,
   });
 
+  await countAttempt(limit);
   const res = NextResponse.json({ user: publicUser(user.toObject()) }, { status: 201 });
   await setSessionCookie(res, { sub: String(user._id), role: 'student', name: user.name });
   return res;

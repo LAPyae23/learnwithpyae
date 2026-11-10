@@ -340,11 +340,19 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             htmlFor="reg-terms"
             className="text-[13px] text-muted-foreground cursor-pointer leading-snug"
           >
-            <Link href="/" className="text-primary font-semibold hover:underline">
+            <Link
+              href="/terms"
+              target="_blank"
+              className="text-primary font-semibold hover:underline"
+            >
               ဝန်ဆောင်မှု စည်းကမ်းချက်
             </Link>{' '}
             နဲ့{' '}
-            <Link href="/" className="text-primary font-semibold hover:underline">
+            <Link
+              href="/privacy"
+              target="_blank"
+              className="text-primary font-semibold hover:underline"
+            >
               ကိုယ်ရေးအချက်အလက် မူဝါဒ
             </Link>{' '}
             ကို သဘောတူပါတယ်။
