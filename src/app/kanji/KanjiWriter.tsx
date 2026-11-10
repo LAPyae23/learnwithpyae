@@ -1,5 +1,5 @@
 'use client';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 type Pt = { x: number; y: number };
 const SIZE = 109; // KanjiVG viewBox
@@ -82,10 +82,12 @@ export default function KanjiWriter({
   const [demoIndex, setDemoIndex] = useState<number | null>(null);
   const drawing = useRef(false);
 
-  const expected = useMemo(
-    () => (typeof document === 'undefined' ? [] : strokes.map((d) => samplePath(d, SAMPLES))),
-    [strokes]
-  );
+  // Sampled after mount (needs the browser's SVG engine), so the server and the first client
+  // render match and React doesn't throw a hydration error.
+  const [expected, setExpected] = useState<Pt[][]>([]);
+  useEffect(() => {
+    setExpected(strokes.map((d) => samplePath(d, SAMPLES)));
+  }, [strokes]);
 
   useEffect(() => {
     setDone(0);
@@ -122,7 +124,7 @@ export default function KanjiWriter({
     drawing.current = false;
     const drawn = current;
     setCurrent([]);
-    if (drawn.length < 2) return;
+    if (drawn.length < 2 || !expected[done]) return;
 
     const result = judge(drawn, expected[done]);
     if (result.ok) {
